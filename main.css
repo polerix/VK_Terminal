@@ -1,0 +1,355 @@
+/* Pass 8 rebuild - layout and theming */
+
+:root {
+  background: #000;
+}
+
+body {
+  margin: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Arial Narrow", Arial, sans-serif;
+}
+
+#themeRoot {
+  width: 1280px;
+  height: 800px;
+  background: #000;
+}
+
+/* Themes */
+
+#themeRoot.theme-esper {
+  color: #ffdd88;
+  text-shadow: 0 0 3px #ffbb55, 0 0 6px #ffbb55;
+}
+
+#themeRoot.theme-crt {
+  color: #80ff80;
+  text-shadow: 0 0 3px #40ff40, 0 0 6px #40ff40;
+}
+
+#themeRoot.theme-terminal {
+  color: #d0d0ff;
+  text-shadow: 0 0 3px #8080ff;
+}
+
+#themeRoot.theme-neon {
+  color: #ff80ff;
+  text-shadow: 0 0 4px #ff40ff, 0 0 8px #40ffff;
+}
+
+#themeRoot.theme-noir {
+  color: #f0f0f0;
+  text-shadow: none;
+}
+
+#themeRoot.theme-c64 {
+  color: #ffffff;
+  background: #0025a1;
+  text-shadow: 0 0 2px #000000;
+}
+
+/* App layout */
+
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+#stackLayer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* IRIS screen */
+
+#irisScreen {
+  position: absolute;
+  left: 240px;
+  top: 0;
+  width: 800px;
+  height: 800px;
+  background: #000;
+  border: 2px solid #444;
+  overflow: hidden;
+}
+
+#irisVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+#irisBars {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    #ffffff 0 14%,
+    #ffff00 14% 28%,
+    #00ff00 28% 42%,
+    #00ffff 42% 56%,
+    #0000ff 56% 70%,
+    #ff00ff 70% 84%,
+    #ff0000 84% 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#irisBars span {
+  color: #000;
+  font-size: 2.6rem;
+  text-shadow: 0 0 5px rgba(255,255,255,0.7);
+}
+
+.centerText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.9);
+  pointer-events: none;
+}
+
+.centerText.small {
+  font-size: 1.8rem;
+}
+
+/* Analyzer panels */
+
+.panelBox {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: #000;
+  border: 1px solid #666;
+  overflow: hidden;
+  cursor: move;
+}
+
+#voicePanel {
+  left: 40px;
+  top: 40px;
+}
+
+#nexusPanel {
+  right: 40px;
+  top: 40px;
+}
+
+#voiceCanvas,
+#nexusCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Footer - WYSE style */
+
+#footer {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background: #000;
+  font-size: 1.4rem;
+}
+
+#footerLine1,
+#footerLine2,
+#footerLine3 {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  white-space: pre;
+}
+
+/* Fixed-width slots */
+
+.slot {
+  display: inline-block;
+  white-space: pre;
+  padding-right: 2ch;
+}
+
+#slotFan { width: 12ch; }
+#slotIris { width: 16ch; }
+#slotAudio { width: 16ch; }
+#slotVideo { width: 16ch; }
+#slotProfile { width: 18ch; }
+.slotStatus { width: 40ch; }
+
+#footerLine2 span {
+  white-space: pre;
+}
+
+#footerLine3 {
+  margin-top: 2px;
+  gap: 2ch;
+}
+
+.actionKey {
+  padding: 0 1ch;
+  white-space: pre;
+  cursor: pointer;
+}
+
+.actionActive {
+  background: #ffdd88;
+  color: #000;
+  text-shadow: none;
+}
+
+/* Floating windows */
+
+.floatingWin {
+  position: absolute;
+  top: 120px;
+  left: 120px;
+  width: 420px;
+  height: 260px;
+  background: #000;
+  border: 1px solid #666;
+  font-size: 1.4rem;
+  display: none;
+  box-shadow: 0 0 12px rgba(0,0,0,0.8);
+}
+
+.winTitle {
+  padding: 4px 8px;
+  background: #111;
+  border-bottom: 1px solid #444;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.winClose {
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.winBody {
+  padding: 8px;
+  overflow: auto;
+  height: calc(100% - 30px);
+}
+
+.winResize {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  right: 0;
+  bottom: 0;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 0 50%, #666 50% 100%);
+}
+
+/* System sections */
+
+.sysSection {
+  margin-bottom: 10px;
+}
+
+.sysHeader {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.sysNote {
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+.firmwareProgressBar {
+  margin-top: 4px;
+  height: 8px;
+  background: #222;
+  position: relative;
+}
+
+.firmwareProgressBar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: #ffdd88;
+  transition: width 0.3s linear;
+}
+
+.firmwareStatus {
+  margin-top: 4px;
+  font-size: 1.2rem;
+}
+
+/* W3S SB content */
+
+.w3sContent {
+  font-size: 1.2rem;
+}
+
+.w3s-title {
+  font-weight: bold;
+}
+
+.w3s-sub {
+  font-style: italic;
+  margin-bottom: 6px;
+}
+
+.w3s-block {
+  margin-bottom: 8px;
+}
+
+.w3s-question {
+  margin-bottom: 2px;
+}
+
+.w3s-reply {
+  opacity: 0.9;
+}
+
+.w3s-weight {
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+/* LOG */
+
+#logContent {
+  margin: 0;
+  font-family: "Courier New", monospace;
+  font-size: 1.2rem;
+  white-space: pre-wrap;
+}
+
+/* VU window */
+
+.vuRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+#vuHorizontal,
+#vuVertical {
+  background: #000;
+  border: 1px solid #555;
+}

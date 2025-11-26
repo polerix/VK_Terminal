@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Voight-Kampff Console - Tyrell CO.</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div id="themeRoot" class="theme-esper">
+    <div class="app">
+
+      <!-- Stacked analyzer layer -->
+      <div id="stackLayer">
+        <!-- IRIS camera (deepest) -->
+        <div id="irisScreen">
+          <video id="irisVideo" autoplay muted playsinline></video>
+          <div id="irisPlaceholder" class="centerText">TYRELL CO.</div>
+          <div id="irisBars"><span>TYRELL CO.</span></div>
+        </div>
+
+        <!-- Voice Analyzer -->
+        <div id="voicePanel" class="panelBox">
+          <canvas id="voiceCanvas" width="400" height="400"></canvas>
+          <div id="voicePlaceholder" class="centerText small">TYRELL CO.</div>
+        </div>
+
+        <!-- Nexus Gen Probability -->
+        <div id="nexusPanel" class="panelBox">
+          <canvas id="nexusCanvas" width="400" height="400"></canvas>
+          <div id="nexusPlaceholder" class="centerText small">TYRELL CO.</div>
+        </div>
+      </div>
+
+      <!-- WYSE style footer -->
+      <div id="footer">
+        <div id="footerLine1">
+          <span class="slot" id="slotFan"></span>
+          <span class="slot" id="slotIris"></span>
+          <span class="slot" id="slotAudio"></span>
+          <span class="slot" id="slotVideo"></span>
+          <span class="slot" id="slotProfile"></span>
+          <span class="slot slotStatus" id="slotStatus"></span>
+        </div>
+        <div id="footerLine2">
+          <span id="line2Text"></span>
+        </div>
+        <div id="footerLine3">
+          <span class="actionKey" id="actK">[K] TOKEN</span>
+          <span class="actionKey" id="actI">[I] IRIS</span>
+          <span class="actionKey" id="actF">[F] FAN</span>
+          <span class="actionKey" id="actD">[D] DISPLAY</span>
+          <span class="actionKey" id="actSpace">[SPACE] INITIATE</span>
+          <span class="actionKey" id="actL">[L] LOG</span>
+          <span class="actionKey" id="actW">[W] W3S SB</span>
+          <span class="actionKey" id="actV">[V] VU</span>
+          <span class="actionKey" id="actS">[S] SYSTEM</span>
+        </div>
+      </div>
+
+      <!-- LOG window -->
+      <div id="logWindow" class="floatingWin">
+        <div class="winTitle" data-drag="logWindow">
+          LOG WINDOW
+          <span class="winClose" data-close="logWindow">X</span>
+        </div>
+        <div class="winBody" id="logBody">
+          <pre id="logContent"></pre>
+        </div>
+        <div class="winResize" data-resize="logWindow"></div>
+      </div>
+
+      <!-- W3S SB window -->
+      <div id="w3sWindow" class="floatingWin">
+        <div class="winTitle" data-drag="w3sWindow">
+          W3S SB - Sympathetic Baseline
+          <span class="winClose" data-close="w3sWindow">X</span>
+        </div>
+        <div class="winBody">
+          <div id="w3sContent" class="w3sContent">NO ROM MODULE LOADED.</div>
+        </div>
+        <div class="winResize" data-resize="w3sWindow"></div>
+      </div>
+
+      <!-- VU meters window -->
+      <div id="vuWindow" class="floatingWin">
+        <div class="winTitle" data-drag="vuWindow">
+          VU METERS
+          <span class="winClose" data-close="vuWindow">X</span>
+        </div>
+        <div class="winBody">
+          <div class="vuRow">
+            <canvas id="vuHorizontal" width="220" height="40"></canvas>
+            <canvas id="vuVertical" width="220" height="40"></canvas>
+          </div>
+        </div>
+        <div class="winResize" data-resize="vuWindow"></div>
+      </div>
+
+      <!-- SYSTEM window -->
+      <div id="sysWindow" class="floatingWin">
+        <div class="winTitle" data-drag="sysWindow">
+          SYSTEM - Diagnostics
+          <span class="winClose" data-close="sysWindow">X</span>
+        </div>
+        <div class="winBody">
+          <div class="sysSection">
+            <div class="sysHeader">Test Video Loop (Future)</div>
+            <label>File:
+              <input type="file" id="testVideoFile" accept="video/*">
+            </label>
+            <p class="sysNote">Future: use selected loop as IRIS input when no live subject.</p>
+          </div>
+
+          <div class="sysSection">
+            <div class="sysHeader">Theme</div>
+            <label><input type="radio" name="themeRadio" value="theme-esper" checked> Esper Amber</label><br>
+            <label><input type="radio" name="themeRadio" value="theme-crt"> CRT Green</label><br>
+            <label><input type="radio" name="themeRadio" value="theme-terminal"> Terminal GUI</label><br>
+            <label><input type="radio" name="themeRadio" value="theme-neon"> Neon 80s</label><br>
+            <label><input type="radio" name="themeRadio" value="theme-noir"> Noir Mono</label><br>
+            <label><input type="radio" name="themeRadio" value="theme-c64"> C64 PET</label><br>
+            <button id="applyThemeBtn">APPLY</button>
+          </div>
+
+          <div class="sysSection">
+            <div class="sysHeader">Audio Feedback</div>
+            <label><input type="radio" name="soundRadio" value="off" checked> Sound Off</label><br>
+            <label><input type="radio" name="soundRadio" value="on"> Sound On</label>
+          </div>
+
+          <div class="sysSection">
+            <div class="sysHeader">VU Meter Mode</div>
+            <label><input type="radio" name="vuMode" value="both" checked> Both</label><br>
+            <label><input type="radio" name="vuMode" value="horizontal"> Horizontal Only</label><br>
+            <label><input type="radio" name="vuMode" value="vertical"> Vertical Only</label>
+          </div>
+
+          <div class="sysSection">
+            <div class="sysHeader">Firmware Update</div>
+            <div>Current ROM: <span id="sysCurrentROM">None</span></div>
+            <input type="file" id="firmwareFilePicker" accept=".json">
+            <div id="firmwareProgress" class="firmwareProgressBar"></div>
+            <div id="firmwareStatus" class="firmwareStatus"></div>
+          </div>
+
+          <div class="sysSection">
+            <div class="sysHeader">Device Info</div>
+            <p>Device: Voight-Kampff Empathy Analyzer Console</p>
+            <p>Manufacturer: Tyrell CO. Genetic Replicants Division</p>
+            <p>Profile Code: <span id="profileCodeText">NONE</span></p>
+            <p>Secure Alignment ROM Module: <span id="romStatusText">NONE</span></p>
+          </div>
+        </div>
+        <div class="winResize" data-resize="sysWindow"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
