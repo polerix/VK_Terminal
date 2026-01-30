@@ -7,7 +7,7 @@ STLs / model parts live in Drive:
 
 | Area | What | Link | Status | Notes |
 |---|---|---|---|---|
-| Prop | Shell / enclosure / frame | (Drive / TBD) | TBD | |
-| Electronics | Pi / power / amp / wiring | (TBD) | TBD | |
-| Buttons | Buttons / knobs / switches | (TBD) | TBD | |
-| UI screens | Display(s) / overlay / bezel | (TBD) | TBD | |
+| Prop | Shell / enclosure / frame | (Drive / TBD) | IN PROGRESS | |
+| Electronics | Pi / power / amp / wiring | (TBD) | IN PROGRESS | |
+| Buttons | Buttons / knobs / switches | (TBD) | IN PROGRESS | |
+| UI screens | Display(s) / overlay / bezel | (TBD) | IN PROGRESS | |
