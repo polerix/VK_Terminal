@@ -14,3 +14,6 @@ Web version of a Voight-Kampff terminal UI for use on Raspberry Pi with Chromium
 
 ## Notes
 - Add wiring/electronics + enclosure notes in the docs/ folder as they exist.
+
+## Parts index
+- See docs/parts.md
