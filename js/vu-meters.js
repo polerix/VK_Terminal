@@ -136,8 +136,14 @@ const VUMeters = {
       this.updateMeterDisplay(this.rightSegments, 0);
     }
     
-    // Left meter: playback output (always active when connected)
-    if (this.playbackAnalyser && this.playbackDataArray) {
+    // Left meter: loopback from mic (until actual playback audio is connected)
+    if (this.micAnalyser && this.micDataArray) {
+      const loopRms = this.getRmsLevel(this.micAnalyser, this.micDataArray);
+      this.leftLevel = this.leftLevel * 0.7 + (loopRms * 5) * 0.3;
+      this.leftLevel = Math.min(1, this.leftLevel);
+      this.updateMeterDisplay(this.leftSegments, this.leftLevel);
+    } else if (this.playbackAnalyser && this.playbackDataArray) {
+      // Use actual playback if connected
       const playRms = this.getRmsLevel(this.playbackAnalyser, this.playbackDataArray);
       this.leftLevel = this.leftLevel * 0.7 + (playRms * 5) * 0.3;
       this.leftLevel = Math.min(1, this.leftLevel);
