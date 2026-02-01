@@ -67,18 +67,19 @@ html, body {
 /* Speech recognition marquee */
 .speech-marquee {
   margin-left: auto;
+  margin-right: 50px;
   display: flex;
   flex-direction: row;
   gap: 0;
   overflow: hidden;
   white-space: nowrap;
-  direction: rtl; /* grows from right to left */
+  max-width: 50%;
 }
 
 .speech-marquee .word {
-  direction: ltr;
   display: inline-block;
-  margin-left: 0.5em;
+  margin-right: 0.5em;
+  transition: opacity 0.3s, transform 0.3s;
 }
 
 .speech-marquee .word.upcoming {
@@ -91,6 +92,7 @@ html, body {
 
 .speech-marquee .word.recognized {
   color: #00cc00;
+  opacity: 0.4;
 }
 
 /* Bottom bar */

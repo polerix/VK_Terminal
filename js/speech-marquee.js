@@ -1,5 +1,6 @@
 // speech-marquee.js — Speech recognition display with color-coded words
 // Red: upcoming (not yet spoken), Yellow: in-progress, Green: recognized
+// Text scrolls left-to-right, recognition advances right-to-left
 
 const SpeechMarquee = {
   element: null,
@@ -7,7 +8,11 @@ const SpeechMarquee = {
   
   // Current phrase words and their states
   words: [],
-  currentWordIndex: 0,
+  recognizedCount: 0,
+  
+  // Question queue
+  questions: [],
+  currentQuestionIndex: 0,
   
   // States: 'upcoming', 'in-progress', 'recognized'
   
@@ -32,14 +37,40 @@ const SpeechMarquee = {
     this.recognition.onend = () => this.handleEnd();
   },
   
-  // Set the phrase to display (from firmware questions)
+  // Load questions from firmware
+  loadQuestions: function(firmware) {
+    if (firmware?.questions) {
+      this.questions = firmware.questions.map(q => q.text);
+      this.currentQuestionIndex = 0;
+    }
+  },
+  
+  // Set the phrase to display
   setPhrase: function(phrase) {
     this.words = phrase.toUpperCase().split(/\s+/).map(word => ({
       text: word,
       state: 'upcoming'
     }));
-    this.currentWordIndex = 0;
+    this.recognizedCount = 0;
     this.render();
+  },
+  
+  // Load next question
+  nextQuestion: function() {
+    if (this.questions.length === 0) return false;
+    
+    this.currentQuestionIndex = (this.currentQuestionIndex + 1) % this.questions.length;
+    this.setPhrase(this.questions[this.currentQuestionIndex]);
+    return true;
+  },
+  
+  // Start with first question
+  startSequence: function() {
+    if (this.questions.length > 0) {
+      this.currentQuestionIndex = 0;
+      this.setPhrase(this.questions[0]);
+    }
+    this.start();
   },
   
   // Start listening
@@ -71,40 +102,52 @@ const SpeechMarquee = {
     // Split into words
     const spokenWords = transcript.split(/\s+/);
     
-    // Match spoken words against our phrase
+    // Match spoken words against our phrase (right to left advancement)
     this.matchWords(spokenWords, isFinal);
     this.render();
+    
+    // Check if phrase is complete
+    if (this.recognizedCount >= this.words.length) {
+      setTimeout(() => this.nextQuestion(), 1000);
+    }
   },
   
   // Match spoken words to phrase words
+  // Recognition advances from right to left (first word to last)
   matchWords: function(spokenWords, isFinal) {
-    // Reset in-progress states
-    this.words.forEach(w => {
-      if (w.state === 'in-progress') {
+    // Reset in-progress states for unrecognized words
+    this.words.forEach((w, i) => {
+      if (i >= this.recognizedCount && w.state === 'in-progress') {
         w.state = 'upcoming';
       }
     });
     
-    // Find matches
-    let phraseIdx = 0;
-    for (let i = 0; i < spokenWords.length && phraseIdx < this.words.length; i++) {
-      const spoken = spokenWords[i].replace(/[^A-Z]/g, '');
-      const target = this.words[phraseIdx].text.replace(/[^A-Z]/g, '');
+    // Count total spoken words to determine progress
+    let spokenIdx = 0;
+    
+    for (let i = this.recognizedCount; i < this.words.length && spokenIdx < spokenWords.length; i++) {
+      const spoken = spokenWords[spokenIdx].replace(/[^A-Z]/g, '');
+      const target = this.words[i].text.replace(/[^A-Z]/g, '');
       
       if (spoken === target) {
+        // Full match
         if (isFinal) {
-          this.words[phraseIdx].state = 'recognized';
+          this.words[i].state = 'recognized';
+          this.recognizedCount = i + 1;
         } else {
-          this.words[phraseIdx].state = 'in-progress';
+          this.words[i].state = 'in-progress';
         }
-        phraseIdx++;
-      } else if (target.startsWith(spoken) && spoken.length > 0) {
-        // Partial match
-        this.words[phraseIdx].state = 'in-progress';
+        spokenIdx++;
+      } else if (target.startsWith(spoken) && spoken.length > 1) {
+        // Partial match - mark in progress
+        this.words[i].state = 'in-progress';
+        spokenIdx++;
+      } else if (isFinal && spokenIdx > 0) {
+        // Skip unmatched word if we've made progress
+        this.words[i].state = 'recognized';
+        this.recognizedCount = i + 1;
       }
     }
-    
-    this.currentWordIndex = phraseIdx;
   },
   
   handleError: function(event) {
@@ -118,18 +161,24 @@ const SpeechMarquee = {
     }
   },
   
-  // Render the marquee
+  // Render the marquee - scrolls left to right
+  // Recognized words disappear from left, upcoming words on right
   render: function() {
     if (!this.element) return;
     
-    this.element.innerHTML = this.words.map(w => 
-      `<span class="word ${w.state}">${w.text}</span>`
-    ).join('');
+    // Build HTML - recognized words fade/disappear, upcoming stay visible
+    const html = this.words.map((w, i) => {
+      let classes = `word ${w.state}`;
+      return `<span class="${classes}">${w.text}</span>`;
+    }).join('');
+    
+    this.element.innerHTML = html;
   },
   
   // Clear the marquee
   clear: function() {
     this.words = [];
+    this.recognizedCount = 0;
     if (this.element) {
       this.element.innerHTML = '';
     }

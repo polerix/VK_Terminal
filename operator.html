@@ -267,10 +267,11 @@
       
       // Start/stop speech recognition
       if (VK.analysisRunning) {
-        // Load a test phrase from firmware or use default
-        const phrase = VK.currentFirmware?.questions?.[0]?.text || "YOU SEE A TORTOISE ON ITS BACK";
-        SpeechMarquee.setPhrase(phrase);
-        SpeechMarquee.start();
+        // Load questions from firmware
+        if (VK.currentFirmware) {
+          SpeechMarquee.loadQuestions(VK.currentFirmware);
+        }
+        SpeechMarquee.startSequence();
       } else {
         SpeechMarquee.stop();
         SpeechMarquee.clear();
