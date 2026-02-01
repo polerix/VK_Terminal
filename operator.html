@@ -6,83 +6,317 @@
   <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <div id="themeRoot" class="theme-esper">
-    <div class="app">
-
-      <!-- Stacked analyzer layer -->
-      <div id="stackLayer">
-        <!-- IRIS camera (main) -->
-        <div id="irisScreen">
-          <video id="irisVideo" autoplay muted playsinline></video>
-          <div id="irisPlaceholder" class="centerText">TYRELL CO.</div>
-          <div id="irisBars"><span>TYRELL CO.</span></div>
-        </div>
-
-        <!-- Voice Analyzer -->
-        <div id="voicePanel" class="panelBox">
-          <canvas id="voiceCanvas" width="400" height="400"></canvas>
-          <div id="voicePlaceholder" class="centerText small">TYRELL CO.</div>
-        </div>
-
-        <!-- Nexus Gen Probability -->
-        <div id="nexusPanel" class="panelBox">
-          <canvas id="nexusCanvas" width="400" height="400"></canvas>
-          <div id="nexusPlaceholder" class="centerText small">TYRELL CO.</div>
-        </div>
+  <div class="frame theme-amber">
+    
+    <!-- Top edge -->
+    <div class="edge-top">
+      <div class="status-bar">
+        <span class="slot" id="slotFan">FAN: —</span>
+        <span class="slot" id="slotIris">IRIS: OFF</span>
+        <span class="slot" id="slotAudio">AUDIO: —</span>
+        <span class="slot" id="slotVideo">VIDEO: —</span>
+        <span class="slot" id="slotProfile">PROFILE: NONE</span>
+        <span class="status-main" id="slotStatus">SYSTEM IDLE</span>
       </div>
-
-      <!-- WYSE style footer -->
-      <div id="footer">
-        <div id="footerLine1">
-          <span class="slot" id="slotFan"></span>
-          <span class="slot" id="slotIris"></span>
-          <span class="slot" id="slotAudio"></span>
-          <span class="slot" id="slotVideo"></span>
-          <span class="slot" id="slotProfile"></span>
-          <span class="slot slotStatus" id="slotStatus"></span>
-        </div>
-        <div id="footerLine2">
-          <span id="line2Text"></span>
-        </div>
-        <div id="footerLine3">
-          <span class="actionKey" id="actK">[K] TOKEN</span>
-          <span class="actionKey" id="actI">[I] IRIS</span>
-          <span class="actionKey" id="actF">[F] FAN</span>
-          <span class="actionKey" id="actD">[D] DISPLAY</span>
-          <span class="actionKey" id="actSpace">[SPACE] INITIATE</span>
-        </div>
-      </div>
-
-      <!-- LOG window (optional) -->
-      <div id="logWindow" class="floatingWin">
-        <div class="winTitle" data-drag="logWindow">
-          LOG WINDOW
-          <span class="winClose" data-close="logWindow">X</span>
-        </div>
-        <div class="winBody" id="logBody">
-          <pre id="logContent"></pre>
-        </div>
-        <div class="winResize" data-resize="logWindow"></div>
-      </div>
-
     </div>
+    
+    <!-- Left edge -->
+    <div class="edge-left">
+      <button class="ctrl-btn" id="btnToken" title="Token [K]">
+        <span class="icon">🔑</span>
+      </button>
+      <button class="ctrl-btn" id="btnIris" title="Iris [I]">
+        <span class="icon">👁</span>
+      </button>
+      <button class="ctrl-btn" id="btnFan" title="Fan [F]">
+        <span class="icon">⟳</span>
+      </button>
+      <button class="ctrl-btn" id="btnDisplay" title="Display [D]">
+        <span class="icon">▣</span>
+      </button>
+    </div>
+    
+    <!-- Workspace -->
+    <div class="workspace" id="workspace">
+      
+      <!-- IRIS Panel (main video) -->
+      <div class="panel" id="irisPanel">
+        <video id="irisVideo" autoplay muted playsinline></video>
+        <div class="color-bars" id="irisBars">
+          <span>TYRELL CO.</span>
+        </div>
+        <div class="placeholder" id="irisPlaceholder">TYRELL CO.</div>
+        <div class="resize-handle" data-resize="irisPanel"></div>
+      </div>
+      
+      <!-- Voice Panel -->
+      <div class="panel" id="voicePanel">
+        <canvas id="voiceCanvas" width="400" height="400"></canvas>
+        <div class="resize-handle" data-resize="voicePanel"></div>
+      </div>
+      
+      <!-- Nexus Panel -->
+      <div class="panel" id="nexusPanel">
+        <canvas id="nexusCanvas" width="400" height="400"></canvas>
+        <div class="resize-handle" data-resize="nexusPanel"></div>
+      </div>
+      
+    </div>
+    
+    <!-- Right edge -->
+    <div class="edge-right">
+      <button class="ctrl-btn" id="btnInitiate" title="Initiate [SPACE]">
+        <span class="icon">▶</span>
+      </button>
+    </div>
+    
+    <!-- Bottom edge -->
+    <div class="edge-bottom">
+      <div class="info-bar">
+        <span><span class="label">ROM:</span> <span class="value" id="romStatus">NONE</span></span>
+        <span><span class="label">MODE:</span> <span class="value" id="modeStatus">STANDBY</span></span>
+      </div>
+      <div class="key-hints">
+        <span class="key-hint" id="hintK">[K] TOKEN</span>
+        <span class="key-hint" id="hintI">[I] IRIS</span>
+        <span class="key-hint" id="hintF">[F] FAN</span>
+        <span class="key-hint" id="hintD">[D] DISPLAY</span>
+        <span class="key-hint" id="hintSpace">[SPACE] INITIATE</span>
+      </div>
+    </div>
+    
   </div>
 
   <script src="js/shared.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/nexus.js"></script>
-  <script src="js/operator.js"></script>
   <script>
-    // Initialize
+    // DOM refs
+    const workspace = document.getElementById("workspace");
+    const irisPanel = document.getElementById("irisPanel");
+    const irisVideo = document.getElementById("irisVideo");
+    const irisBars = document.getElementById("irisBars");
+    const irisPlaceholder = document.getElementById("irisPlaceholder");
+    const voicePanel = document.getElementById("voicePanel");
+    const nexusPanel = document.getElementById("nexusPanel");
+    
+    const slotStatus = document.getElementById("slotStatus");
+    const slotFan = document.getElementById("slotFan");
+    const slotIris = document.getElementById("slotIris");
+    const slotAudio = document.getElementById("slotAudio");
+    const slotVideo = document.getElementById("slotVideo");
+    const slotProfile = document.getElementById("slotProfile");
+    const romStatus = document.getElementById("romStatus");
+    const modeStatus = document.getElementById("modeStatus");
+    
+    const btnToken = document.getElementById("btnToken");
+    const btnIris = document.getElementById("btnIris");
+    const btnFan = document.getElementById("btnFan");
+    const btnDisplay = document.getElementById("btnDisplay");
+    const btnInitiate = document.getElementById("btnInitiate");
+    
+    // Init panels
     VoicePanel.init("voiceCanvas");
     NexusPanel.init("nexusCanvas");
-    Operator.init();
     
-    // Load default firmware
-    VK.loadDefaultFirmware();
+    // Drag state
+    let dragTarget = null;
+    let dragOffset = { x: 0, y: 0 };
     
-    // Set initial status
-    Operator.setStatus("SYSTEM IDLE - PRESS K TO LOAD TOKEN");
+    // Resize state
+    let resizeTarget = null;
+    let resizeStart = { x: 0, y: 0, w: 0, h: 0 };
+    
+    // Make panels draggable
+    document.querySelectorAll(".panel").forEach(panel => {
+      panel.addEventListener("mousedown", (e) => {
+        if (e.target.classList.contains("resize-handle")) return;
+        dragTarget = panel;
+        const rect = panel.getBoundingClientRect();
+        dragOffset.x = e.clientX - rect.left;
+        dragOffset.y = e.clientY - rect.top;
+        panel.style.zIndex = Date.now() % 10000;
+        e.preventDefault();
+      });
+    });
+    
+    // Make panels resizable (proportional)
+    document.querySelectorAll(".resize-handle").forEach(handle => {
+      handle.addEventListener("mousedown", (e) => {
+        const panelId = handle.getAttribute("data-resize");
+        resizeTarget = document.getElementById(panelId);
+        const rect = resizeTarget.getBoundingClientRect();
+        resizeStart = {
+          x: e.clientX,
+          y: e.clientY,
+          w: rect.width,
+          h: rect.height,
+          ratio: rect.width / rect.height
+        };
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+    
+    document.addEventListener("mousemove", (e) => {
+      if (dragTarget) {
+        const wsRect = workspace.getBoundingClientRect();
+        let x = e.clientX - wsRect.left - dragOffset.x;
+        let y = e.clientY - wsRect.top - dragOffset.y;
+        // Remove transform for IRIS panel when dragging
+        dragTarget.style.transform = "none";
+        dragTarget.style.left = x + "px";
+        dragTarget.style.top = y + "px";
+      }
+      if (resizeTarget) {
+        const dx = e.clientX - resizeStart.x;
+        const dy = e.clientY - resizeStart.y;
+        // Proportional resize based on diagonal movement
+        const delta = (dx + dy) / 2;
+        const newW = Math.max(160, resizeStart.w + delta);
+        const newH = newW / resizeStart.ratio;
+        resizeTarget.style.width = newW + "px";
+        resizeTarget.style.height = newH + "px";
+        resizeTarget.style.transform = "none";
+      }
+    });
+    
+    document.addEventListener("mouseup", () => {
+      dragTarget = null;
+      resizeTarget = null;
+    });
+    
+    // Key handling
+    let spaceDown = false;
+    
+    document.addEventListener("keydown", (e) => {
+      if (VK.checkTechnicianAccess(e)) return;
+      const key = e.key.toLowerCase();
+      
+      if (key === "k") handleToken();
+      else if (key === "i") handleIris();
+      else if (key === "f") handleFan();
+      else if (key === "d") handleDisplay();
+      else if (key === " " && !spaceDown) {
+        spaceDown = true;
+        handleInitiate();
+      }
+    });
+    
+    document.addEventListener("keyup", (e) => {
+      if (e.key === " ") spaceDown = false;
+    });
+    
+    // Button handlers
+    btnToken.addEventListener("click", handleToken);
+    btnIris.addEventListener("click", handleIris);
+    btnFan.addEventListener("click", handleFan);
+    btnDisplay.addEventListener("click", handleDisplay);
+    btnInitiate.addEventListener("click", handleInitiate);
+    
+    function handleToken() {
+      VK.requestToken().then(success => {
+        if (success) {
+          irisVideo.srcObject = VK.mediaStream;
+          setStatus("TOKEN VERIFIED");
+          updateUI();
+        }
+      });
+    }
+    
+    function handleIris() {
+      if (!VK.hasToken) return;
+      VK.irisTargetActive = !VK.irisTargetActive;
+      setStatus(VK.irisTargetActive ? "IRIS DEPLOYING" : "IRIS RETRACTING");
+      VK.broadcastState();
+    }
+    
+    function handleFan() {
+      if (!VK.hasToken) return;
+      VK.fanOn = !VK.fanOn;
+      setStatus(VK.fanOn ? "FAN ACTIVE" : "FAN OFF");
+      VK.broadcastState();
+      updateUI();
+    }
+    
+    function handleDisplay() {
+      if (!VK.hasToken) return;
+      if (VK.irisState !== "ACTIVE") {
+        setStatus("IRIS NOT DEPLOYED");
+        return;
+      }
+      VK.displayOn = !VK.displayOn;
+      setStatus(VK.displayOn ? "DISPLAYS ACTIVE" : "DISPLAYS OFF");
+      VK.broadcastState();
+      updateUI();
+    }
+    
+    function handleInitiate() {
+      if (!VK.hasToken) return;
+      if (!VK.displayOn || VK.irisState !== "ACTIVE") {
+        setStatus("CANNOT INITIATE — DISPLAYS OFF OR IRIS NOT ACTIVE");
+        return;
+      }
+      VK.analysisRunning = !VK.analysisRunning;
+      setStatus(VK.analysisRunning ? "TEST SEQUENCE RUNNING" : "TEST SEQUENCE HALTED");
+      VK.broadcastState();
+      updateUI();
+    }
+    
+    function setStatus(text) {
+      slotStatus.textContent = text;
+      VK.logEvent("STATUS: " + text);
+    }
+    
+    function updateUI() {
+      // Buttons
+      btnToken.classList.toggle("active", VK.hasToken);
+      btnIris.classList.toggle("active", VK.irisTargetActive || VK.irisState !== "OFF");
+      btnFan.classList.toggle("active", VK.fanOn);
+      btnDisplay.classList.toggle("active", VK.displayOn);
+      btnInitiate.classList.toggle("active", VK.analysisRunning);
+      
+      // Key hints
+      document.getElementById("hintK").classList.toggle("active", VK.hasToken);
+      document.getElementById("hintI").classList.toggle("active", VK.irisTargetActive);
+      document.getElementById("hintF").classList.toggle("active", VK.fanOn);
+      document.getElementById("hintD").classList.toggle("active", VK.displayOn);
+      document.getElementById("hintSpace").classList.toggle("active", VK.analysisRunning);
+      
+      // Status slots
+      slotFan.textContent = "FAN: " + (VK.fanOn ? "ON" : "—");
+      slotFan.classList.toggle("ready", VK.fanOn);
+      
+      slotIris.textContent = "IRIS: " + VK.irisState;
+      slotIris.classList.toggle("ready", VK.irisState === "ACTIVE");
+      
+      slotAudio.textContent = "AUDIO: " + (VK.hasToken ? "READY" : "—");
+      slotAudio.classList.toggle("ready", VK.hasToken);
+      
+      slotVideo.textContent = "VIDEO: " + (VK.irisState === "ACTIVE" ? "READY" : "—");
+      slotVideo.classList.toggle("ready", VK.irisState === "ACTIVE");
+      
+      const profile = VK.currentFirmware ? VK.currentFirmware.profile : "NONE";
+      slotProfile.textContent = "PROFILE: " + profile;
+      romStatus.textContent = profile;
+      
+      modeStatus.textContent = VK.analysisRunning ? "ACTIVE" : "STANDBY";
+      
+      // IRIS display state
+      if (!VK.displayOn) {
+        irisPlaceholder.style.display = "flex";
+        irisBars.style.display = "none";
+        irisVideo.style.display = "none";
+      } else if (VK.irisState === "ACTIVE") {
+        irisPlaceholder.style.display = "none";
+        irisBars.style.display = "none";
+        irisVideo.style.display = "block";
+      } else {
+        irisPlaceholder.style.display = "none";
+        irisBars.style.display = "flex";
+        irisVideo.style.display = "none";
+      }
+    }
     
     // Animation loop
     let lastTime = performance.now();
@@ -93,15 +327,20 @@
       
       VK.updateIris(dt);
       VK.updateAudio();
-      Operator.updateUI();
       
       if (VK.displayOn) {
         VoicePanel.draw();
         NexusPanel.draw();
       }
       
+      updateUI();
       requestAnimationFrame(animate);
     }
+    
+    // Init
+    VK.loadDefaultFirmware();
+    setStatus("SYSTEM IDLE — PRESS K TO LOAD TOKEN");
+    updateUI();
     animate();
   </script>
 </body>

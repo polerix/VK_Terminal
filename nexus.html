@@ -4,53 +4,29 @@
   <meta charset="utf-8">
   <title>Nexus Probability — Tyrell CO.</title>
   <link rel="stylesheet" href="main.css">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    #nexusCanvas {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-    }
-  </style>
 </head>
-<body>
-  <canvas id="nexusCanvas" width="400" height="400"></canvas>
+<body style="background:#fff;">
+  <div class="fullscreen-panel" style="background:#fff;">
+    <canvas id="nexusCanvas" width="400" height="400"></canvas>
+  </div>
   
   <script src="js/shared.js"></script>
   <script src="js/nexus.js"></script>
   <script>
-    // Initialize nexus panel
     NexusPanel.init("nexusCanvas");
     
-    // Resize canvas to fill screen
-    function resizeCanvas() {
+    function resize() {
       const canvas = document.getElementById("nexusCanvas");
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    resize();
+    window.addEventListener("resize", resize);
     
-    // Listen for state changes from operator
-    VK.addListener(() => {
-      // State updated via BroadcastChannel
-    });
-    
-    // Technician access
     document.addEventListener("keydown", (e) => {
       VK.checkTechnicianAccess(e);
     });
     
-    // Animation loop
     function animate() {
       NexusPanel.draw();
       requestAnimationFrame(animate);

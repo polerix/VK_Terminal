@@ -4,55 +4,29 @@
   <meta charset="utf-8">
   <title>Voice Analyzer — Tyrell CO.</title>
   <link rel="stylesheet" href="main.css">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    #voiceCanvas {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-    }
-  </style>
 </head>
 <body>
-  <canvas id="voiceCanvas" width="400" height="400"></canvas>
+  <div class="fullscreen-panel">
+    <canvas id="voiceCanvas" width="400" height="400"></canvas>
+  </div>
   
   <script src="js/shared.js"></script>
   <script src="js/voice.js"></script>
   <script>
-    // Initialize voice panel
     VoicePanel.init("voiceCanvas");
     
-    // Resize canvas to fill screen
-    function resizeCanvas() {
+    function resize() {
       const canvas = document.getElementById("voiceCanvas");
-      // Keep aspect ratio but fill viewport
-      const size = Math.min(window.innerWidth, window.innerHeight);
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    resize();
+    window.addEventListener("resize", resize);
     
-    // Listen for state changes from operator
-    VK.addListener(() => {
-      // State updated via BroadcastChannel
-    });
-    
-    // Technician access
     document.addEventListener("keydown", (e) => {
       VK.checkTechnicianAccess(e);
     });
     
-    // Animation loop
     function animate() {
       VoicePanel.draw();
       requestAnimationFrame(animate);

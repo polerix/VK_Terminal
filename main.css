@@ -1,355 +1,296 @@
-/* Pass 8 rebuild - layout and theming */
+/* VK Terminal — WYSE Terminal Style */
 
 :root {
-  background: #000;
+  --bg: #0a0a0a;
+  --panel-bg: #000;
+  --border: #444;
+  --text: #d0d0d0;
+  --text-muted: #888;
+  --accent: #ffcc00;
+  --active: #ffdd88;
+  --inactive: #444;
 }
 
-body {
+* {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  background: #000;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Main frame */
+.frame {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  grid-template-rows: 48px 1fr 48px;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Edge bars */
+.edge-top, .edge-bottom {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.edge-bottom {
+  border-bottom: none;
+  border-top: 1px solid var(--border);
+  grid-column: 1 / -1;
+}
+
+.edge-top {
+  grid-column: 1 / -1;
+}
+
+.edge-left, .edge-right {
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 8px;
+}
+
+.edge-right {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+/* Control buttons */
+.ctrl-btn {
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  transition: all 0.1s ease;
+}
+
+.ctrl-btn:hover {
+  background: #222;
+  border-color: #666;
+  color: var(--text);
+}
+
+.ctrl-btn.active {
+  background: var(--active);
+  color: #000;
+  border-color: var(--active);
+}
+
+.ctrl-btn .icon {
+  font-size: 16px;
+}
+
+/* Status display */
+.status-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.status-bar .slot {
+  white-space: nowrap;
+}
+
+.status-bar .slot.ready {
+  color: var(--accent);
+}
+
+.status-main {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* Workspace (center) */
+.workspace {
+  background: #050505;
+  position: relative;
   overflow: hidden;
-  font-family: "Arial Narrow", Arial, sans-serif;
 }
 
-#themeRoot {
-  width: 1280px;
-  height: 800px;
-  background: #000;
-}
-
-/* Themes */
-
-#themeRoot.theme-esper {
-  color: #ffdd88;
-  text-shadow: 0 0 3px #ffbb55, 0 0 6px #ffbb55;
-}
-
-#themeRoot.theme-crt {
-  color: #80ff80;
-  text-shadow: 0 0 3px #40ff40, 0 0 6px #40ff40;
-}
-
-#themeRoot.theme-terminal {
-  color: #d0d0ff;
-  text-shadow: 0 0 3px #8080ff;
-}
-
-#themeRoot.theme-neon {
-  color: #ff80ff;
-  text-shadow: 0 0 4px #ff40ff, 0 0 8px #40ffff;
-}
-
-#themeRoot.theme-noir {
-  color: #f0f0f0;
-  text-shadow: none;
-}
-
-#themeRoot.theme-c64 {
-  color: #ffffff;
-  background: #0025a1;
-  text-shadow: 0 0 2px #000000;
-}
-
-/* App layout */
-
-.app {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-rows: 1fr auto;
-}
-
-#stackLayer {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* IRIS screen */
-
-#irisScreen {
+/* Draggable/resizable panels */
+.panel {
   position: absolute;
-  left: 240px;
-  top: 0;
-  width: 800px;
-  height: 800px;
-  background: #000;
-  border: 2px solid #444;
-  overflow: hidden;
+  background: var(--panel-bg);
+  border: none;
+  cursor: move;
+  user-select: none;
 }
 
-#irisVideo {
+.panel canvas,
+.panel video {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: none;
+  object-fit: contain;
+  background: #000;
 }
 
-#irisBars {
+.panel video {
+  object-fit: cover;
+}
+
+/* Resize handle */
+.panel .resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.panel:hover .resize-handle {
+  opacity: 1;
+  background: linear-gradient(135deg, transparent 50%, var(--border) 50%);
+}
+
+/* Panel placeholder (when inactive) */
+.panel .placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+
+/* IRIS specific */
+#irisPanel {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 640px;
+  height: 480px;
+}
+
+#irisPanel .color-bars {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to right,
-    #ffffff 0 14%,
-    #ffff00 14% 28%,
-    #00ff00 28% 42%,
-    #00ffff 42% 56%,
-    #0000ff 56% 70%,
-    #ff00ff 70% 84%,
-    #ff0000 84% 100%
+    #fff 0 14.28%,
+    #ff0 14.28% 28.56%,
+    #0ff 28.56% 42.84%,
+    #0f0 42.84% 57.12%,
+    #f0f 57.12% 71.4%,
+    #f00 71.4% 85.68%,
+    #00f 85.68% 100%
   );
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-#irisBars span {
+#irisPanel .color-bars span {
   color: #000;
-  font-size: 2.6rem;
-  text-shadow: 0 0 5px rgba(255,255,255,0.7);
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
 }
 
-.centerText {
-  position: absolute;
-  inset: 0;
+/* Voice panel */
+#voicePanel {
+  left: 20px;
+  top: 20px;
+  width: 320px;
+  height: 320px;
+}
+
+/* Nexus panel */
+#nexusPanel {
+  right: 20px;
+  top: 20px;
+  width: 320px;
+  height: 320px;
+}
+
+/* Bottom info bar */
+.info-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2.4rem;
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255,255,255,0.9);
-  pointer-events: none;
+  gap: 16px;
+  font-size: 11px;
 }
 
-.centerText.small {
-  font-size: 1.8rem;
+.info-bar .label {
+  color: var(--text-muted);
 }
 
-/* Analyzer panels */
+.info-bar .value {
+  color: var(--accent);
+}
 
-.panelBox {
-  position: absolute;
-  width: 400px;
-  height: 400px;
+/* Key hints */
+.key-hints {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.key-hint {
+  padding: 4px 8px;
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.key-hint:hover {
+  border-color: #666;
+  color: var(--text);
+}
+
+.key-hint.active {
+  background: var(--active);
+  color: #000;
+  border-color: var(--active);
+}
+
+/* Fullscreen panels (voice.html, nexus.html) */
+.fullscreen-panel {
+  position: fixed;
+  inset: 0;
   background: #000;
-  border: 1px solid #666;
-  overflow: hidden;
-  cursor: move;
 }
 
-#voicePanel {
-  left: 40px;
-  top: 40px;
-}
-
-#nexusPanel {
-  right: 40px;
-  top: 40px;
-}
-
-#voiceCanvas,
-#nexusCanvas {
+.fullscreen-panel canvas {
   width: 100%;
   height: 100%;
 }
 
-/* Footer - WYSE style */
-
-#footer {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  background: #000;
-  font-size: 1.4rem;
-}
-
-#footerLine1,
-#footerLine2,
-#footerLine3 {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  white-space: pre;
-}
-
-/* Fixed-width slots */
-
-.slot {
-  display: inline-block;
-  white-space: pre;
-  padding-right: 2ch;
-}
-
-#slotFan { width: 12ch; }
-#slotIris { width: 16ch; }
-#slotAudio { width: 16ch; }
-#slotVideo { width: 16ch; }
-#slotProfile { width: 18ch; }
-.slotStatus { width: 40ch; }
-
-#footerLine2 span {
-  white-space: pre;
-}
-
-#footerLine3 {
-  margin-top: 2px;
-  gap: 2ch;
-}
-
-.actionKey {
-  padding: 0 1ch;
-  white-space: pre;
-  cursor: pointer;
-}
-
-.actionActive {
-  background: #ffdd88;
-  color: #000;
-  text-shadow: none;
-}
-
-/* Floating windows */
-
-.floatingWin {
-  position: absolute;
-  top: 120px;
-  left: 120px;
-  width: 420px;
-  height: 260px;
-  background: #000;
-  border: 1px solid #666;
-  font-size: 1.4rem;
-  display: none;
-  box-shadow: 0 0 12px rgba(0,0,0,0.8);
-}
-
-.winTitle {
-  padding: 4px 8px;
-  background: #111;
-  border-bottom: 1px solid #444;
-  cursor: move;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.winClose {
-  cursor: pointer;
-  padding: 0 4px;
-}
-
-.winBody {
-  padding: 8px;
-  overflow: auto;
-  height: calc(100% - 30px);
-}
-
-.winResize {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  right: 0;
-  bottom: 0;
-  cursor: se-resize;
-  background: linear-gradient(135deg, transparent 0 50%, #666 50% 100%);
-}
-
-/* System sections */
-
-.sysSection {
-  margin-bottom: 10px;
-}
-
-.sysHeader {
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.sysNote {
-  font-size: 1.1rem;
-  opacity: 0.8;
-}
-
-.firmwareProgressBar {
-  margin-top: 4px;
-  height: 8px;
-  background: #222;
-  position: relative;
-}
-
-.firmwareProgressBar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0%;
-  background: #ffdd88;
-  transition: width 0.3s linear;
-}
-
-.firmwareStatus {
-  margin-top: 4px;
-  font-size: 1.2rem;
-}
-
-/* W3S SB content */
-
-.w3sContent {
-  font-size: 1.2rem;
-}
-
-.w3s-title {
-  font-weight: bold;
-}
-
-.w3s-sub {
-  font-style: italic;
-  margin-bottom: 6px;
-}
-
-.w3s-block {
-  margin-bottom: 8px;
-}
-
-.w3s-question {
-  margin-bottom: 2px;
-}
-
-.w3s-reply {
-  opacity: 0.9;
-}
-
-.w3s-weight {
-  font-size: 1.1rem;
-  opacity: 0.8;
-}
-
-/* LOG */
-
-#logContent {
-  margin: 0;
-  font-family: "Courier New", monospace;
-  font-size: 1.2rem;
-  white-space: pre-wrap;
-}
-
-/* VU window */
-
-.vuRow {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
-}
-
-#vuHorizontal,
-#vuVertical {
-  background: #000;
-  border: 1px solid #555;
-}
+/* Theme overrides (minimal) */
+.theme-amber { --accent: #ffcc00; --active: #ffdd88; }
+.theme-green { --accent: #00ff66; --active: #88ffaa; }
+.theme-blue { --accent: #6699ff; --active: #99bbff; }
+.theme-white { --accent: #ffffff; --active: #ffffff; --text: #ffffff; }
