@@ -24,6 +24,10 @@ const SpeechMarquee = {
   catchUpSpeed: 25,
   animating: false,
   
+  // Auto-advance timing
+  autoAdvanceInterval: 2000,  // ms between auto word advances
+  lastAutoAdvance: 0,
+  
   // Key hold for read head advancement
   leftHeld: false,
   rightHeld: false,
@@ -191,15 +195,23 @@ const SpeechMarquee = {
     if (this.rightHeld && now - this.lastAdvance > this.holdDelay) {
       this.advanceReadHead(1);
       this.lastAdvance = now;
+      this.lastAutoAdvance = now; // Reset auto-advance timer
       // Speed up the longer you hold
       this.holdDelay = Math.max(50, this.holdDelay - 10);
     } else if (this.leftHeld && now - this.lastAdvance > this.holdDelay) {
       this.advanceReadHead(-1);
       this.lastAdvance = now;
+      this.lastAutoAdvance = now; // Reset auto-advance timer
       this.holdDelay = Math.max(50, this.holdDelay - 10);
     } else if (!this.rightHeld && !this.leftHeld) {
       // Reset hold delay when not holding
       this.holdDelay = 150;
+      
+      // Auto-advance read head if no keys held and no recent recognition
+      if (now - this.lastAutoAdvance > this.autoAdvanceInterval) {
+        this.advanceReadHead(1);
+        this.lastAutoAdvance = now;
+      }
     }
     
     // Scroll towards target (where read head is)
@@ -253,6 +265,7 @@ const SpeechMarquee = {
       this.currentQuestionIdx = 0;
       this.setPhrase(this.questions[0]);
     }
+    this.lastAutoAdvance = performance.now();
     this.start();
     this.startAnimation();
   },
@@ -280,7 +293,13 @@ const SpeechMarquee = {
     const isFinal = lastResult.isFinal;
     
     const spokenWords = transcript.split(/\s+/);
-    this.matchWords(spokenWords, isFinal);
+    const advanced = this.matchWords(spokenWords, isFinal);
+    
+    // Reset auto-advance timer if recognition advanced the read head
+    if (advanced) {
+      this.lastAutoAdvance = performance.now();
+    }
+    
     this.updateClasses();
     this.calculateTargetOffset();
     
@@ -292,6 +311,7 @@ const SpeechMarquee = {
   matchWords: function(spokenWords, isFinal) {
     // Only update words at or after current read head
     let matchIdx = this.currentWordIndex;
+    let advanced = false;
     
     for (let s = 0; s < spokenWords.length && matchIdx < this.words.length; s++) {
       const spoken = spokenWords[s].replace(/[^A-Z]/g, '');
@@ -307,6 +327,7 @@ const SpeechMarquee = {
           if (matchIdx === this.currentWordIndex && matchIdx + 1 < this.words.length) {
             this.currentWordIndex = matchIdx + 1;
             this.words[this.currentWordIndex].state = 'in-progress';
+            advanced = true;
           }
         } else {
           this.words[matchIdx].state = 'in-progress';
@@ -316,6 +337,8 @@ const SpeechMarquee = {
         this.words[matchIdx].state = 'in-progress';
       }
     }
+    
+    return advanced;
   },
   
   updateClasses: function() {
