@@ -20,8 +20,8 @@ const SpeechMarquee = {
   // Scrolling state
   currentOffset: 0,
   targetOffset: 0,
-  scrollSpeed: 0.5,        // Base pixels per frame
-  catchUpSpeed: 3,         // Speed when catching up
+  scrollSpeed: 1.5,        // Base pixels per frame
+  catchUpSpeed: 6,         // Speed when catching up (2x base)
   animating: false,
   
   init: function(elementId) {
@@ -116,12 +116,12 @@ const SpeechMarquee = {
     const distance = this.targetOffset - this.currentOffset;
     const absDistance = Math.abs(distance);
     
-    // Determine speed - faster when catching up
+    // Determine speed - 2x when catching up to recognized words
     let speed = this.scrollSpeed;
-    if (absDistance > 50) {
+    if (absDistance > 30) {
       speed = this.catchUpSpeed;
-    } else if (absDistance > 20) {
-      speed = this.scrollSpeed * 2;
+    } else if (absDistance > 10) {
+      speed = this.scrollSpeed * 1.5;
     }
     
     // Move towards target
