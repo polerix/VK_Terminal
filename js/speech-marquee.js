@@ -20,8 +20,8 @@ const SpeechMarquee = {
   // Scrolling state
   currentOffset: 0,
   targetOffset: 0,
-  scrollSpeed: 1.5,        // Base pixels per frame
-  catchUpSpeed: 6,         // Speed when catching up (2x base)
+  scrollSpeed: 4.5,        // Base pixels per frame
+  catchUpSpeed: 9,         // Speed when catching up (2x base)
   animating: false,
   
   init: function(elementId) {
