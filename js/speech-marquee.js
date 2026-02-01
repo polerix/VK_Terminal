@@ -195,6 +195,8 @@ const SpeechMarquee = {
     if (this.rightHeld || this.leftHeld) {
       // Manual control - direct movement
       this.currentOffset -= speed; // Negative because moving track left = text scrolls right
+      // Update target to current position so it doesn't bounce back
+      this.targetOffset = this.currentOffset;
     } else if (absDistance > 0.5) {
       // Auto-scroll towards target
       const direction = distance > 0 ? 1 : -1;
