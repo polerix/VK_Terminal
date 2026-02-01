@@ -26,6 +26,20 @@
         <canvas id="voiceCanvas" width="400" height="400"></canvas>
       </div>
       
+      <!-- Left VU Meter: 400x40 base, below voice panel -->
+      <div class="vu-meter" id="vuMeterLeft" data-base-w="400" data-base-h="40">
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#e0e0e0"></div>
+        <div class="vu-segment" style="background:#e0e0e0"></div>
+        <div class="vu-segment" style="background:#e0e0e0"></div>
+      </div>
+      
       <!-- IRIS Panel: 800x800 base -->
       <div class="panel" id="irisPanel" data-base-w="800" data-base-h="800">
         <video id="irisVideo" autoplay muted playsinline></video>
@@ -36,6 +50,20 @@
       <!-- Nexus Panel: 400x400 base -->
       <div class="panel" id="nexusPanel" data-base-w="400" data-base-h="400">
         <canvas id="nexusCanvas" width="400" height="400"></canvas>
+      </div>
+      
+      <!-- Right VU Meter: 400x40 base, below nexus panel -->
+      <div class="vu-meter" id="vuMeterRight" data-base-w="400" data-base-h="40">
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#00cc00"></div>
+        <div class="vu-segment" style="background:#cccc00"></div>
+        <div class="vu-segment" style="background:#cccc00"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
+        <div class="vu-segment" style="background:#cc0000"></div>
       </div>
       
     </div>
@@ -63,6 +91,8 @@
     const voicePanel = document.getElementById("voicePanel");
     const irisPanel = document.getElementById("irisPanel");
     const nexusPanel = document.getElementById("nexusPanel");
+    const vuMeterLeft = document.getElementById("vuMeterLeft");
+    const vuMeterRight = document.getElementById("vuMeterRight");
     const irisVideo = document.getElementById("irisVideo");
     const irisBars = document.getElementById("irisBars");
     const irisPlaceholder = document.getElementById("irisPlaceholder");
@@ -95,6 +125,8 @@
     function layoutPanels() {
       const ws = workspace.getBoundingClientRect();
       const gap = 20;
+      const vuGap = 10; // gap between panel and VU meter
+      const vuHeight = 40;
       const baseTotal = 1600 + gap * 2; // 400 + 800 + 400 + gaps
       const baseHeight = 800;
       
@@ -110,6 +142,8 @@
       const nexusW = 400 * scale;
       const nexusH = 400 * scale;
       const scaledGap = gap * scale;
+      const scaledVuGap = vuGap * scale;
+      const scaledVuH = vuHeight * scale;
       
       // Total scaled width
       const totalW = voiceW + irisW + nexusW + scaledGap * 2;
@@ -135,6 +169,17 @@
       nexusPanel.style.top = nexusY + "px";
       nexusPanel.style.width = nexusW + "px";
       nexusPanel.style.height = nexusH + "px";
+      
+      // Position VU meters below voice and nexus panels
+      vuMeterLeft.style.left = startX + "px";
+      vuMeterLeft.style.top = (voiceY + voiceH + scaledVuGap) + "px";
+      vuMeterLeft.style.width = voiceW + "px";
+      vuMeterLeft.style.height = scaledVuH + "px";
+      
+      vuMeterRight.style.left = (startX + voiceW + scaledGap + irisW + scaledGap) + "px";
+      vuMeterRight.style.top = (nexusY + nexusH + scaledVuGap) + "px";
+      vuMeterRight.style.width = nexusW + "px";
+      vuMeterRight.style.height = scaledVuH + "px";
     }
     
     layoutPanels();

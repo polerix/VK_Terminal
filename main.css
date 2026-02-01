@@ -192,3 +192,17 @@ html, body {
   max-height: 100%;
   object-fit: contain;
 }
+
+/* VU Meters */
+.vu-meter {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  background: #000;
+}
+
+.vu-segment {
+  flex: 1;
+  height: 100%;
+}
