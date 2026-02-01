@@ -84,7 +84,6 @@ html, body {
   left: 0;
   display: flex;
   gap: 0.4em;
-  transition: transform 0.4s ease-out;
   will-change: transform;
 }
 

@@ -1,5 +1,6 @@
 // speech-marquee.js — Speech recognition display with color-coded words
-// Red: upcoming, Yellow: in-progress (centered), Green: recognized (scrolls left)
+// Red: upcoming, Yellow: in-progress (centered), Green: recognized
+// Auto-scrolls continuously, speeds up when recognition catches up
 
 const SpeechMarquee = {
   element: null,
@@ -16,11 +17,17 @@ const SpeechMarquee = {
   wordElements: [],
   isListening: false,
   
+  // Scrolling state
+  currentOffset: 0,
+  targetOffset: 0,
+  scrollSpeed: 0.5,        // Base pixels per frame
+  catchUpSpeed: 3,         // Speed when catching up
+  animating: false,
+  
   init: function(elementId) {
     this.element = document.getElementById(elementId);
     if (!this.element) return;
     
-    // Create inner track
     this.track = document.createElement('div');
     this.track.className = 'speech-marquee-track';
     this.element.appendChild(this.track);
@@ -72,23 +79,25 @@ const SpeechMarquee = {
     
     this.wordElements = Array.from(this.track.querySelectorAll('.word'));
     
-    // Position after DOM ready
+    // Reset scroll position - start from right edge
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        this.positionTrack();
+        const containerWidth = this.element.offsetWidth;
+        // Start with first word at the right edge
+        this.currentOffset = containerWidth - 50;
+        this.targetOffset = this.currentOffset;
+        this.track.style.transform = `translateX(${this.currentOffset}px)`;
+        this.calculateTargetOffset();
       });
     });
   },
   
-  positionTrack: function() {
-    if (!this.element || !this.track || this.wordElements.length === 0) return;
+  calculateTargetOffset: function() {
+    if (!this.element || this.wordElements.length === 0) return;
     
     const containerWidth = this.element.offsetWidth;
-    const trackWidth = this.track.scrollWidth;
+    const centerX = containerWidth / 2;
     
-    if (containerWidth === 0 || trackWidth === 0) return;
-    
-    // Find current word position
     const currentEl = this.wordElements[this.currentWordIndex];
     if (!currentEl) return;
     
@@ -96,11 +105,44 @@ const SpeechMarquee = {
     const wordWidth = currentEl.offsetWidth;
     const wordCenter = wordLeft + (wordWidth / 2);
     
-    // Center the current word in the container
-    const centerX = containerWidth / 2;
-    const offset = centerX - wordCenter;
+    this.targetOffset = centerX - wordCenter;
+  },
+  
+  // Animation loop - always scrolling
+  animate: function() {
+    if (!this.animating) return;
     
-    this.track.style.transform = `translateX(${offset}px)`;
+    // Calculate distance to target
+    const distance = this.targetOffset - this.currentOffset;
+    const absDistance = Math.abs(distance);
+    
+    // Determine speed - faster when catching up
+    let speed = this.scrollSpeed;
+    if (absDistance > 50) {
+      speed = this.catchUpSpeed;
+    } else if (absDistance > 20) {
+      speed = this.scrollSpeed * 2;
+    }
+    
+    // Move towards target
+    if (absDistance > 0.5) {
+      const direction = distance > 0 ? 1 : -1;
+      const move = Math.min(speed, absDistance) * direction;
+      this.currentOffset += move;
+      this.track.style.transform = `translateX(${this.currentOffset}px)`;
+    }
+    
+    requestAnimationFrame(() => this.animate());
+  },
+  
+  startAnimation: function() {
+    if (this.animating) return;
+    this.animating = true;
+    this.animate();
+  },
+  
+  stopAnimation: function() {
+    this.animating = false;
   },
   
   nextQuestion: function() {
@@ -115,6 +157,7 @@ const SpeechMarquee = {
       this.setPhrase(this.questions[0]);
     }
     this.start();
+    this.startAnimation();
   },
   
   start: function() {
@@ -127,6 +170,7 @@ const SpeechMarquee = {
   
   stop: function() {
     this.isListening = false;
+    this.stopAnimation();
     if (!this.recognition) return;
     try {
       this.recognition.stop();
@@ -141,16 +185,14 @@ const SpeechMarquee = {
     const spokenWords = transcript.split(/\s+/);
     this.matchWords(spokenWords, isFinal);
     this.updateClasses();
-    this.positionTrack();
+    this.calculateTargetOffset();
     
-    // Check if complete
     if (this.recognizedCount >= this.words.length) {
-      setTimeout(() => this.nextQuestion(), 1200);
+      setTimeout(() => this.nextQuestion(), 800);
     }
   },
   
   matchWords: function(spokenWords, isFinal) {
-    // Reset non-recognized words to upcoming
     for (let i = this.recognizedCount; i < this.words.length; i++) {
       if (this.words[i].state !== 'recognized') {
         this.words[i].state = 'upcoming';
@@ -178,14 +220,12 @@ const SpeechMarquee = {
         this.words[matchIdx].state = 'in-progress';
         this.currentWordIndex = matchIdx;
       } else if (isFinal) {
-        // Skip on mismatch
         this.words[matchIdx].state = 'recognized';
         this.recognizedCount = matchIdx + 1;
         matchIdx++;
       }
     }
     
-    // Mark current as in-progress
     if (this.recognizedCount < this.words.length) {
       this.currentWordIndex = this.recognizedCount;
       this.words[this.currentWordIndex].state = 'in-progress';
@@ -215,6 +255,7 @@ const SpeechMarquee = {
     this.recognizedCount = 0;
     this.currentWordIndex = 0;
     this.wordElements = [];
+    this.stopAnimation();
     if (this.track) {
       this.track.innerHTML = '';
       this.track.style.transform = '';
