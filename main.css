@@ -68,18 +68,22 @@ html, body {
 .speech-marquee {
   margin-left: auto;
   margin-right: 50px;
-  display: flex;
-  flex-direction: row;
-  gap: 0;
+  position: relative;
   overflow: hidden;
   white-space: nowrap;
-  max-width: 50%;
+  width: 400px;
+}
+
+.speech-marquee-track {
+  display: inline-flex;
+  gap: 0.5em;
+  transition: transform 0.3s ease-out;
+  will-change: transform;
 }
 
 .speech-marquee .word {
   display: inline-block;
-  margin-right: 0.5em;
-  transition: opacity 0.3s, transform 0.3s;
+  flex-shrink: 0;
 }
 
 .speech-marquee .word.upcoming {
