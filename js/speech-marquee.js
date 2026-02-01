@@ -1,7 +1,7 @@
 // speech-marquee.js — Speech recognition display with color-coded words
 // Red: upcoming, Yellow: in-progress (centered), Green: recognized
 // Auto-scrolls continuously, speeds up when recognition catches up
-// Arrow keys: Left/Right = speed, Up = prev question, Down = next question
+// Arrow keys: Left/Right = speed (hold to accelerate), Up/Down = prev/next question
 
 const SpeechMarquee = {
   element: null,
@@ -24,8 +24,14 @@ const SpeechMarquee = {
   baseSpeed: 10,           // Base pixels per frame
   scrollSpeed: 10,         // Current speed (adjustable)
   catchUpSpeed: 20,        // Speed when catching up (2x base)
-  speedStep: 2,            // How much to change speed per keypress
   animating: false,
+  
+  // Key hold acceleration
+  leftHeld: false,
+  rightHeld: false,
+  holdAccel: 0,            // Acceleration from holding keys
+  accelRate: 0.5,          // How fast acceleration builds
+  maxAccel: 50,            // Maximum acceleration
   
   init: function(elementId) {
     this.element = document.getElementById(elementId);
@@ -52,6 +58,7 @@ const SpeechMarquee = {
     
     // Keyboard controls
     document.addEventListener('keydown', (e) => this.handleKeydown(e));
+    document.addEventListener('keyup', (e) => this.handleKeyup(e));
   },
   
   handleKeydown: function(e) {
@@ -59,24 +66,33 @@ const SpeechMarquee = {
     
     switch (e.key) {
       case 'ArrowRight':
-        // Speed up / forward
-        this.scrollSpeed += this.speedStep;
+        this.rightHeld = true;
         e.preventDefault();
         break;
       case 'ArrowLeft':
-        // Slow down / reverse
-        this.scrollSpeed -= this.speedStep;
+        this.leftHeld = true;
         e.preventDefault();
         break;
       case 'ArrowUp':
-        // Previous question
         this.prevQuestion();
         e.preventDefault();
         break;
       case 'ArrowDown':
-        // Next question
         this.nextQuestion();
         e.preventDefault();
+        break;
+    }
+  },
+  
+  handleKeyup: function(e) {
+    switch (e.key) {
+      case 'ArrowRight':
+        this.rightHeld = false;
+        this.holdAccel = 0;
+        break;
+      case 'ArrowLeft':
+        this.leftHeld = false;
+        this.holdAccel = 0;
         break;
     }
   },
@@ -100,8 +116,9 @@ const SpeechMarquee = {
       this.words[0].state = 'in-progress';
     }
     
-    // Reset speed to base
+    // Reset speed and acceleration
     this.scrollSpeed = this.baseSpeed;
+    this.holdAccel = 0;
     
     this.buildTrack();
   },
@@ -147,25 +164,41 @@ const SpeechMarquee = {
   animate: function() {
     if (!this.animating) return;
     
+    // Build up acceleration while keys held
+    if (this.rightHeld) {
+      this.holdAccel = Math.min(this.holdAccel + this.accelRate, this.maxAccel);
+    } else if (this.leftHeld) {
+      this.holdAccel = Math.min(this.holdAccel + this.accelRate, this.maxAccel);
+    }
+    
     const distance = this.targetOffset - this.currentOffset;
     const absDistance = Math.abs(distance);
     
-    // Use catch-up speed when far behind, otherwise use current scroll speed
-    let speed = Math.abs(this.scrollSpeed);
-    if (absDistance > 50) {
-      speed = Math.max(speed, this.catchUpSpeed);
+    // Calculate effective speed
+    let speed = this.baseSpeed;
+    
+    // Apply key-based acceleration
+    if (this.rightHeld) {
+      // Speed up forward
+      speed = this.baseSpeed + this.holdAccel;
+    } else if (this.leftHeld) {
+      // Reverse with acceleration
+      speed = -(this.baseSpeed + this.holdAccel);
+    } else if (absDistance > 50) {
+      // Catch up when far behind
+      speed = this.catchUpSpeed;
     } else if (absDistance > 20) {
-      speed = Math.max(speed, this.baseSpeed * 1.5);
+      speed = this.baseSpeed * 1.5;
     }
     
-    // Apply direction from scrollSpeed (negative = reverse)
-    if (this.scrollSpeed < 0) {
-      // Reverse scrolling - move right
-      this.currentOffset += speed;
+    // Move based on speed
+    if (this.rightHeld || this.leftHeld) {
+      // Manual control - direct movement
+      this.currentOffset -= speed; // Negative because moving track left = text scrolls right
     } else if (absDistance > 0.5) {
-      // Normal scrolling - move towards target
+      // Auto-scroll towards target
       const direction = distance > 0 ? 1 : -1;
-      const move = Math.min(speed, absDistance) * direction;
+      const move = Math.min(Math.abs(speed), absDistance) * direction;
       this.currentOffset += move;
     }
     
@@ -304,6 +337,9 @@ const SpeechMarquee = {
     this.currentWordIndex = 0;
     this.wordElements = [];
     this.scrollSpeed = this.baseSpeed;
+    this.holdAccel = 0;
+    this.leftHeld = false;
+    this.rightHeld = false;
     this.stopAnimation();
     if (this.track) {
       this.track.innerHTML = '';
