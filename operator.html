@@ -15,6 +15,7 @@
       <span class="slot" id="slotAudio">AUDIO: —</span>
       <span class="slot" id="slotVideo">VIDEO: —</span>
       <span class="slot" id="slotProfile">PROFILE: NONE</span>
+      <div class="speech-marquee" id="speechMarquee"></div>
       <span class="status-main" id="slotStatus">SYSTEM IDLE</span>
     </div>
     
@@ -86,6 +87,7 @@
   <script src="js/voice.js"></script>
   <script src="js/nexus.js"></script>
   <script src="js/vu-meters.js"></script>
+  <script src="js/speech-marquee.js"></script>
   <script>
     // DOM refs
     const workspace = document.getElementById("workspace");
@@ -117,6 +119,7 @@
     VoicePanel.init("voiceCanvas");
     NexusPanel.init("nexusCanvas");
     VUMeters.init("vuMeterLeft", "vuMeterRight");
+    SpeechMarquee.init("speechMarquee");
     
     // Layout panels proportionally
     // Base sizes: Voice 400x400, IRIS 800x800, Nexus 400x400
@@ -261,6 +264,18 @@
       }
       VK.analysisRunning = !VK.analysisRunning;
       setStatus(VK.analysisRunning ? "TEST SEQUENCE RUNNING" : "TEST SEQUENCE HALTED");
+      
+      // Start/stop speech recognition
+      if (VK.analysisRunning) {
+        // Load a test phrase from firmware or use default
+        const phrase = VK.currentFirmware?.questions?.[0]?.text || "YOU SEE A TORTOISE ON ITS BACK";
+        SpeechMarquee.setPhrase(phrase);
+        SpeechMarquee.start();
+      } else {
+        SpeechMarquee.stop();
+        SpeechMarquee.clear();
+      }
+      
       VK.broadcastState();
       updateUI();
     }

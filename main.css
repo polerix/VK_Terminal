@@ -59,8 +59,38 @@ html, body {
 }
 
 .top-bar .status-main {
-  margin-left: auto;
+  margin-left: 50px;
   color: var(--text);
+  flex-shrink: 0;
+}
+
+/* Speech recognition marquee */
+.speech-marquee {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  direction: rtl; /* grows from right to left */
+}
+
+.speech-marquee .word {
+  direction: ltr;
+  display: inline-block;
+  margin-left: 0.5em;
+}
+
+.speech-marquee .word.upcoming {
+  color: #cc0000;
+}
+
+.speech-marquee .word.in-progress {
+  color: #cccc00;
+}
+
+.speech-marquee .word.recognized {
+  color: #00cc00;
 }
 
 /* Bottom bar */
