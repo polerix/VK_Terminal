@@ -1,37 +1,30 @@
 // speech-marquee.js — Speech recognition display with color-coded words
-// Red: upcoming (not yet spoken), Yellow: in-progress, Green: recognized
-// Scrolls to keep current word centered, recognized words disappear left
+// Red: upcoming, Yellow: in-progress (centered), Green: recognized (scrolls left)
 
 const SpeechMarquee = {
   element: null,
   track: null,
   recognition: null,
   
-  // Current phrase words and their states
   words: [],
   recognizedCount: 0,
   currentWordIndex: 0,
   
-  // Question queue
   questions: [],
   currentQuestionIdx: 0,
   
-  // Word elements for measuring
   wordElements: [],
+  isListening: false,
   
   init: function(elementId) {
     this.element = document.getElementById(elementId);
-    if (!this.element) {
-      console.error("SpeechMarquee: Element not found:", elementId);
-      return;
-    }
+    if (!this.element) return;
     
-    // Create inner track for scrolling
+    // Create inner track
     this.track = document.createElement('div');
     this.track.className = 'speech-marquee-track';
     this.element.appendChild(this.track);
     
-    // Check for speech recognition support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("SpeechMarquee: Speech recognition not supported");
@@ -48,7 +41,6 @@ const SpeechMarquee = {
     this.recognition.onend = () => this.handleEnd();
   },
   
-  // Load questions from firmware
   loadQuestions: function(firmware) {
     if (firmware?.questions) {
       this.questions = firmware.questions.map(q => q.text);
@@ -56,7 +48,6 @@ const SpeechMarquee = {
     }
   },
   
-  // Set the phrase to display
   setPhrase: function(phrase) {
     this.words = phrase.toUpperCase().split(/\s+/).map(word => ({
       text: word,
@@ -65,24 +56,59 @@ const SpeechMarquee = {
     this.recognizedCount = 0;
     this.currentWordIndex = 0;
     
-    // Mark first word as in-progress
     if (this.words.length > 0) {
       this.words[0].state = 'in-progress';
     }
     
-    this.render();
+    this.buildTrack();
   },
   
-  // Load next question
-  nextQuestion: function() {
-    if (this.questions.length === 0) return false;
+  buildTrack: function() {
+    if (!this.track) return;
     
+    this.track.innerHTML = this.words.map((w, i) => 
+      `<span class="word ${w.state}" data-idx="${i}">${w.text}</span>`
+    ).join(' ');
+    
+    this.wordElements = Array.from(this.track.querySelectorAll('.word'));
+    
+    // Position after DOM ready
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.positionTrack();
+      });
+    });
+  },
+  
+  positionTrack: function() {
+    if (!this.element || !this.track || this.wordElements.length === 0) return;
+    
+    const containerWidth = this.element.offsetWidth;
+    const trackWidth = this.track.scrollWidth;
+    
+    if (containerWidth === 0 || trackWidth === 0) return;
+    
+    // Find current word position
+    const currentEl = this.wordElements[this.currentWordIndex];
+    if (!currentEl) return;
+    
+    const wordLeft = currentEl.offsetLeft;
+    const wordWidth = currentEl.offsetWidth;
+    const wordCenter = wordLeft + (wordWidth / 2);
+    
+    // Center the current word in the container
+    const centerX = containerWidth / 2;
+    const offset = centerX - wordCenter;
+    
+    this.track.style.transform = `translateX(${offset}px)`;
+  },
+  
+  nextQuestion: function() {
+    if (this.questions.length === 0) return;
     this.currentQuestionIdx = (this.currentQuestionIdx + 1) % this.questions.length;
     this.setPhrase(this.questions[this.currentQuestionIdx]);
-    return true;
   },
   
-  // Start with first question
   startSequence: function() {
     if (this.questions.length > 0) {
       this.currentQuestionIdx = 0;
@@ -91,151 +117,99 @@ const SpeechMarquee = {
     this.start();
   },
   
-  // Start listening
   start: function() {
     if (!this.recognition) return;
+    this.isListening = true;
     try {
       this.recognition.start();
-      console.log("SpeechMarquee: Started listening");
-    } catch (e) {
-      console.warn("SpeechMarquee: Could not start", e);
-    }
+    } catch (e) {}
   },
   
-  // Stop listening
   stop: function() {
+    this.isListening = false;
     if (!this.recognition) return;
     try {
       this.recognition.stop();
     } catch (e) {}
   },
   
-  // Handle speech recognition results
   handleResult: function(event) {
     const lastResult = event.results[event.results.length - 1];
     const transcript = lastResult[0].transcript.toUpperCase().trim();
     const isFinal = lastResult.isFinal;
     
     const spokenWords = transcript.split(/\s+/);
-    
     this.matchWords(spokenWords, isFinal);
-    this.updateDisplay();
+    this.updateClasses();
+    this.positionTrack();
     
-    // Check if phrase is complete
+    // Check if complete
     if (this.recognizedCount >= this.words.length) {
-      setTimeout(() => this.nextQuestion(), 1500);
+      setTimeout(() => this.nextQuestion(), 1200);
     }
   },
   
-  // Match spoken words - advances through phrase
   matchWords: function(spokenWords, isFinal) {
-    // Reset in-progress states
-    this.words.forEach((w, i) => {
-      if (i >= this.recognizedCount && w.state !== 'recognized') {
-        w.state = 'upcoming';
+    // Reset non-recognized words to upcoming
+    for (let i = this.recognizedCount; i < this.words.length; i++) {
+      if (this.words[i].state !== 'recognized') {
+        this.words[i].state = 'upcoming';
       }
-    });
+    }
     
     let matchIdx = this.recognizedCount;
     
-    for (let i = 0; i < spokenWords.length && matchIdx < this.words.length; i++) {
-      const spoken = spokenWords[i].replace(/[^A-Z]/g, '');
+    for (let s = 0; s < spokenWords.length && matchIdx < this.words.length; s++) {
+      const spoken = spokenWords[s].replace(/[^A-Z]/g, '');
+      if (!spoken) continue;
+      
       const target = this.words[matchIdx].text.replace(/[^A-Z]/g, '');
       
       if (spoken === target) {
         if (isFinal) {
           this.words[matchIdx].state = 'recognized';
           this.recognizedCount = matchIdx + 1;
-          matchIdx++;
         } else {
           this.words[matchIdx].state = 'in-progress';
-          this.currentWordIndex = matchIdx;
         }
+        this.currentWordIndex = matchIdx;
+        matchIdx++;
       } else if (target.startsWith(spoken) && spoken.length > 1) {
         this.words[matchIdx].state = 'in-progress';
         this.currentWordIndex = matchIdx;
-      } else if (isFinal && i > 0) {
-        // Skip word on mismatch after progress
+      } else if (isFinal) {
+        // Skip on mismatch
         this.words[matchIdx].state = 'recognized';
         this.recognizedCount = matchIdx + 1;
         matchIdx++;
       }
     }
     
-    // Set current word in-progress if nothing matched
+    // Mark current as in-progress
     if (this.recognizedCount < this.words.length) {
       this.currentWordIndex = this.recognizedCount;
-      if (this.words[this.currentWordIndex].state === 'upcoming') {
-        this.words[this.currentWordIndex].state = 'in-progress';
-      }
+      this.words[this.currentWordIndex].state = 'in-progress';
     }
   },
   
-  handleError: function(event) {
-    console.warn("SpeechMarquee: Error", event.error);
-  },
-  
-  handleEnd: function() {
-    if (VK.analysisRunning) {
-      setTimeout(() => this.start(), 100);
-    }
-  },
-  
-  // Render the marquee - creates word elements
-  render: function() {
-    if (!this.track) return;
-    
-    this.track.innerHTML = this.words.map((w, i) => 
-      `<span class="word ${w.state}" data-idx="${i}">${w.text}</span>`
-    ).join('');
-    
-    this.wordElements = Array.from(this.track.querySelectorAll('.word'));
-    
-    // Scroll after DOM update
-    requestAnimationFrame(() => this.scrollToCurrentWord());
-  },
-  
-  // Update display without full re-render (just update classes and scroll)
-  updateDisplay: function() {
-    if (!this.track || this.wordElements.length !== this.words.length) {
-      this.render();
-      return;
-    }
-    
-    // Update classes on existing elements
+  updateClasses: function() {
     this.words.forEach((w, i) => {
       if (this.wordElements[i]) {
         this.wordElements[i].className = `word ${w.state}`;
       }
     });
-    
-    this.scrollToCurrentWord();
   },
   
-  // Scroll to keep current word centered
-  scrollToCurrentWord: function() {
-    if (!this.element || !this.track || this.wordElements.length === 0) return;
-    
-    const containerWidth = this.element.offsetWidth;
-    if (containerWidth === 0) return; // Not visible yet
-    
-    const centerTarget = containerWidth / 2;
-    
-    // Find the current word element
-    const currentEl = this.wordElements[this.currentWordIndex];
-    if (!currentEl) return;
-    
-    // Calculate offset to center current word
-    const wordLeft = currentEl.offsetLeft;
-    const wordWidth = currentEl.offsetWidth;
-    const wordCenter = wordLeft + wordWidth / 2;
-    
-    const offset = centerTarget - wordCenter;
-    
-    this.track.style.transform = `translateX(${offset}px)`;
+  handleError: function(event) {
+    console.warn("SpeechMarquee:", event.error);
   },
   
-  // Clear the marquee
+  handleEnd: function() {
+    if (this.isListening && VK.analysisRunning) {
+      setTimeout(() => this.start(), 100);
+    }
+  },
+  
   clear: function() {
     this.words = [];
     this.recognizedCount = 0;

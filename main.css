@@ -72,17 +72,20 @@ html, body {
   overflow: hidden;
   white-space: nowrap;
   flex: 1;
-  max-width: 500px;
-  min-width: 200px;
+  max-width: 600px;
+  min-width: 300px;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .speech-marquee-track {
-  display: inline-flex;
-  gap: 0.5em;
-  transition: transform 0.35s ease-out;
-  will-change: transform;
-  position: relative;
+  position: absolute;
   left: 0;
+  display: flex;
+  gap: 0.4em;
+  transition: transform 0.4s ease-out;
+  will-change: transform;
 }
 
 .speech-marquee .word {
@@ -99,8 +102,8 @@ html, body {
 }
 
 .speech-marquee .word.recognized {
-  color: #00cc00;
-  opacity: 0.3;
+  color: #22aa22;
+  opacity: 0.25;
 }
 
 /* Bottom bar */
