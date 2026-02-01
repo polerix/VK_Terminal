@@ -2,161 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Voight-Kampff Console - Tyrell CO.</title>
+  <title>VK Terminal — System Test</title>
   <link rel="stylesheet" href="main.css">
+  <style>
+    .test-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+      height: calc(100vh - 160px);
+    }
+    .test-panel {
+      background: #111;
+      border: 2px solid #444;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .test-panel h2 {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      margin: 0;
+      font-size: 14px;
+      color: #888;
+    }
+    .test-panel .status {
+      font-size: 24px;
+      color: #0f0;
+    }
+    .test-panel .status.offline {
+      color: #f00;
+    }
+    .test-panel canvas {
+      max-width: 100%;
+      max-height: 80%;
+    }
+    .launcher {
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .launcher a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #222;
+      border: 1px solid #666;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .launcher a:hover {
+      background: #333;
+      border-color: #888;
+    }
+    .header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #333;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #ffdd88;
+    }
+    .header p {
+      margin: 8px 0 0;
+      color: #888;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
   <div id="themeRoot" class="theme-esper">
-    <div class="app">
-
-      <!-- Stacked analyzer layer -->
-      <div id="stackLayer">
-        <!-- IRIS camera (deepest) -->
-        <div id="irisScreen">
-          <video id="irisVideo" autoplay muted playsinline></video>
-          <div id="irisPlaceholder" class="centerText">TYRELL CO.</div>
-          <div id="irisBars"><span>TYRELL CO.</span></div>
-        </div>
-
-        <!-- Voice Analyzer -->
-        <div id="voicePanel" class="panelBox">
-          <canvas id="voiceCanvas" width="400" height="400"></canvas>
-          <div id="voicePlaceholder" class="centerText small">TYRELL CO.</div>
-        </div>
-
-        <!-- Nexus Gen Probability -->
-        <div id="nexusPanel" class="panelBox">
-          <canvas id="nexusCanvas" width="400" height="400"></canvas>
-          <div id="nexusPlaceholder" class="centerText small">TYRELL CO.</div>
-        </div>
+    <div class="header">
+      <h1>VOIGHT-KAMPFF TERMINAL — SYSTEM TEST</h1>
+      <p>Verify all displays are active before launching kiosk mode</p>
+    </div>
+    
+    <div class="test-grid">
+      <div class="test-panel" id="voiceTest">
+        <h2>VOICE ANALYZER (GPIO LCD 1)</h2>
+        <canvas id="voiceCanvas" width="400" height="400"></canvas>
+        <div class="status" id="voiceStatus">CHECKING...</div>
       </div>
-
-      <!-- WYSE style footer -->
-      <div id="footer">
-        <div id="footerLine1">
-          <span class="slot" id="slotFan"></span>
-          <span class="slot" id="slotIris"></span>
-          <span class="slot" id="slotAudio"></span>
-          <span class="slot" id="slotVideo"></span>
-          <span class="slot" id="slotProfile"></span>
-          <span class="slot slotStatus" id="slotStatus"></span>
+      
+      <div class="test-panel" id="mainTest">
+        <h2>MAIN DISPLAY (HDMI)</h2>
+        <div id="irisScreen" style="width:100%;height:80%;background:#000;display:flex;align-items:center;justify-content:center;">
+          <video id="irisVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:none;"></video>
+          <div id="irisBars" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(to right,#fff 0 14%,#ff0 14% 28%,#0f0 28% 42%,#0ff 42% 56%,#00f 56% 70%,#f0f 70% 84%,#f00 84% 100%);">
+            <span style="color:#000;font-size:2rem;">TYRELL CO.</span>
+          </div>
         </div>
-        <div id="footerLine2">
-          <span id="line2Text"></span>
-        </div>
-        <div id="footerLine3">
-          <span class="actionKey" id="actK">[K] TOKEN</span>
-          <span class="actionKey" id="actI">[I] IRIS</span>
-          <span class="actionKey" id="actF">[F] FAN</span>
-          <span class="actionKey" id="actD">[D] DISPLAY</span>
-          <span class="actionKey" id="actSpace">[SPACE] INITIATE</span>
-          <span class="actionKey" id="actL">[L] LOG</span>
-          <span class="actionKey" id="actW">[W] W3S SB</span>
-          <span class="actionKey" id="actV">[V] VU</span>
-          <span class="actionKey" id="actS">[S] SYSTEM</span>
-        </div>
+        <div class="status" id="mainStatus">CHECKING...</div>
       </div>
-
-      <!-- LOG window -->
-      <div id="logWindow" class="floatingWin">
-        <div class="winTitle" data-drag="logWindow">
-          LOG WINDOW
-          <span class="winClose" data-close="logWindow">X</span>
-        </div>
-        <div class="winBody" id="logBody">
-          <pre id="logContent"></pre>
-        </div>
-        <div class="winResize" data-resize="logWindow"></div>
+      
+      <div class="test-panel" id="nexusTest">
+        <h2>NEXUS PROBABILITY (GPIO LCD 2)</h2>
+        <canvas id="nexusCanvas" width="400" height="400"></canvas>
+        <div class="status" id="nexusStatus">CHECKING...</div>
       </div>
-
-      <!-- W3S SB window -->
-      <div id="w3sWindow" class="floatingWin">
-        <div class="winTitle" data-drag="w3sWindow">
-          W3S SB - Sympathetic Baseline
-          <span class="winClose" data-close="w3sWindow">X</span>
-        </div>
-        <div class="winBody">
-          <div id="w3sContent" class="w3sContent">NO ROM MODULE LOADED.</div>
-        </div>
-        <div class="winResize" data-resize="w3sWindow"></div>
-      </div>
-
-      <!-- VU meters window -->
-      <div id="vuWindow" class="floatingWin">
-        <div class="winTitle" data-drag="vuWindow">
-          VU METERS
-          <span class="winClose" data-close="vuWindow">X</span>
-        </div>
-        <div class="winBody">
-          <div class="vuRow">
-            <canvas id="vuHorizontal" width="220" height="40"></canvas>
-            <canvas id="vuVertical" width="220" height="40"></canvas>
-          </div>
-        </div>
-        <div class="winResize" data-resize="vuWindow"></div>
-      </div>
-
-      <!-- SYSTEM window -->
-      <div id="sysWindow" class="floatingWin">
-        <div class="winTitle" data-drag="sysWindow">
-          SYSTEM - Diagnostics
-          <span class="winClose" data-close="sysWindow">X</span>
-        </div>
-        <div class="winBody">
-          <div class="sysSection">
-            <div class="sysHeader">Test Video Loop (Future)</div>
-            <label>File:
-              <input type="file" id="testVideoFile" accept="video/*">
-            </label>
-            <p class="sysNote">Future: use selected loop as IRIS input when no live subject.</p>
-          </div>
-
-          <div class="sysSection">
-            <div class="sysHeader">Theme</div>
-            <label><input type="radio" name="themeRadio" value="theme-esper" checked> Esper Amber</label><br>
-            <label><input type="radio" name="themeRadio" value="theme-crt"> CRT Green</label><br>
-            <label><input type="radio" name="themeRadio" value="theme-terminal"> Terminal GUI</label><br>
-            <label><input type="radio" name="themeRadio" value="theme-neon"> Neon 80s</label><br>
-            <label><input type="radio" name="themeRadio" value="theme-noir"> Noir Mono</label><br>
-            <label><input type="radio" name="themeRadio" value="theme-c64"> C64 PET</label><br>
-            <button id="applyThemeBtn">APPLY</button>
-          </div>
-
-          <div class="sysSection">
-            <div class="sysHeader">Audio Feedback</div>
-            <label><input type="radio" name="soundRadio" value="off" checked> Sound Off</label><br>
-            <label><input type="radio" name="soundRadio" value="on"> Sound On</label>
-          </div>
-
-          <div class="sysSection">
-            <div class="sysHeader">VU Meter Mode</div>
-            <label><input type="radio" name="vuMode" value="both" checked> Both</label><br>
-            <label><input type="radio" name="vuMode" value="horizontal"> Horizontal Only</label><br>
-            <label><input type="radio" name="vuMode" value="vertical"> Vertical Only</label>
-          </div>
-
-          <div class="sysSection">
-            <div class="sysHeader">Firmware Update</div>
-            <div>Current ROM: <span id="sysCurrentROM">None</span></div>
-            <input type="file" id="firmwareFilePicker" accept=".json">
-            <div id="firmwareProgress" class="firmwareProgressBar"></div>
-            <div id="firmwareStatus" class="firmwareStatus"></div>
-          </div>
-
-          <div class="sysSection">
-            <div class="sysHeader">Device Info</div>
-            <p>Device: Voight-Kampff Empathy Analyzer Console</p>
-            <p>Manufacturer: Tyrell CO. Genetic Replicants Division</p>
-            <p>Profile Code: <span id="profileCodeText">NONE</span></p>
-            <p>Secure Alignment ROM Module: <span id="romStatusText">NONE</span></p>
-          </div>
-        </div>
-        <div class="winResize" data-resize="sysWindow"></div>
-      </div>
-
+    </div>
+    
+    <div class="launcher">
+      <a href="operator.html">LAUNCH OPERATOR (HDMI)</a>
+      <a href="voice.html">LAUNCH VOICE (LCD 1)</a>
+      <a href="nexus.html">LAUNCH NEXUS (LCD 2)</a>
+      <a href="technician.html">TECHNICIAN ACCESS</a>
     </div>
   </div>
-
-  <script src="main.js"></script>
+  
+  <script src="js/shared.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/nexus.js"></script>
+  <script>
+    // Test page initialization
+    VoicePanel.init("voiceCanvas");
+    NexusPanel.init("nexusCanvas");
+    
+    // Request token for camera/audio test
+    document.getElementById("mainTest").addEventListener("click", async () => {
+      const success = await VK.requestToken();
+      if (success) {
+        document.getElementById("irisVideo").srcObject = VK.mediaStream;
+        document.getElementById("irisVideo").style.display = "block";
+        document.getElementById("irisBars").style.display = "none";
+        document.getElementById("mainStatus").textContent = "ACTIVE";
+        document.getElementById("mainStatus").classList.remove("offline");
+      }
+    });
+    
+    // Mark panels as ready
+    setTimeout(() => {
+      document.getElementById("voiceStatus").textContent = "READY";
+      document.getElementById("nexusStatus").textContent = "READY";
+      document.getElementById("mainStatus").textContent = "CLICK TO TEST CAMERA";
+    }, 500);
+    
+    // Animation loop for test display
+    function testAnimate() {
+      VoicePanel.draw();
+      NexusPanel.draw();
+      requestAnimationFrame(testAnimate);
+    }
+    testAnimate();
+    
+    // Load firmware
+    VK.loadDefaultFirmware();
+  </script>
 </body>
 </html>

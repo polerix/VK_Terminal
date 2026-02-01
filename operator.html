@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Voight-Kampff Console — Tyrell CO.</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <div id="themeRoot" class="theme-esper">
+    <div class="app">
+
+      <!-- Stacked analyzer layer -->
+      <div id="stackLayer">
+        <!-- IRIS camera (main) -->
+        <div id="irisScreen">
+          <video id="irisVideo" autoplay muted playsinline></video>
+          <div id="irisPlaceholder" class="centerText">TYRELL CO.</div>
+          <div id="irisBars"><span>TYRELL CO.</span></div>
+        </div>
+
+        <!-- Voice Analyzer -->
+        <div id="voicePanel" class="panelBox">
+          <canvas id="voiceCanvas" width="400" height="400"></canvas>
+          <div id="voicePlaceholder" class="centerText small">TYRELL CO.</div>
+        </div>
+
+        <!-- Nexus Gen Probability -->
+        <div id="nexusPanel" class="panelBox">
+          <canvas id="nexusCanvas" width="400" height="400"></canvas>
+          <div id="nexusPlaceholder" class="centerText small">TYRELL CO.</div>
+        </div>
+      </div>
+
+      <!-- WYSE style footer -->
+      <div id="footer">
+        <div id="footerLine1">
+          <span class="slot" id="slotFan"></span>
+          <span class="slot" id="slotIris"></span>
+          <span class="slot" id="slotAudio"></span>
+          <span class="slot" id="slotVideo"></span>
+          <span class="slot" id="slotProfile"></span>
+          <span class="slot slotStatus" id="slotStatus"></span>
+        </div>
+        <div id="footerLine2">
+          <span id="line2Text"></span>
+        </div>
+        <div id="footerLine3">
+          <span class="actionKey" id="actK">[K] TOKEN</span>
+          <span class="actionKey" id="actI">[I] IRIS</span>
+          <span class="actionKey" id="actF">[F] FAN</span>
+          <span class="actionKey" id="actD">[D] DISPLAY</span>
+          <span class="actionKey" id="actSpace">[SPACE] INITIATE</span>
+        </div>
+      </div>
+
+      <!-- LOG window (optional) -->
+      <div id="logWindow" class="floatingWin">
+        <div class="winTitle" data-drag="logWindow">
+          LOG WINDOW
+          <span class="winClose" data-close="logWindow">X</span>
+        </div>
+        <div class="winBody" id="logBody">
+          <pre id="logContent"></pre>
+        </div>
+        <div class="winResize" data-resize="logWindow"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/shared.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/nexus.js"></script>
+  <script src="js/operator.js"></script>
+  <script>
+    // Initialize
+    VoicePanel.init("voiceCanvas");
+    NexusPanel.init("nexusCanvas");
+    Operator.init();
+    
+    // Load default firmware
+    VK.loadDefaultFirmware();
+    
+    // Set initial status
+    Operator.setStatus("SYSTEM IDLE - PRESS K TO LOAD TOKEN");
+    
+    // Animation loop
+    let lastTime = performance.now();
+    function animate() {
+      const now = performance.now();
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+      
+      VK.updateIris(dt);
+      VK.updateAudio();
+      Operator.updateUI();
+      
+      if (VK.displayOn) {
+        VoicePanel.draw();
+        NexusPanel.draw();
+      }
+      
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
