@@ -1,7 +1,6 @@
 // speech-marquee.js — Speech recognition display with color-coded words
-// Red: upcoming, Yellow: in-progress (centered), Green: recognized
-// Auto-scrolls continuously, speeds up when recognition catches up
-// Arrow keys: Left/Right = speed (hold to accelerate), Up/Down = prev/next question
+// Red: upcoming, Yellow: in-progress (read head), Green: recognized
+// Arrow keys move the read head, scroll follows
 
 const SpeechMarquee = {
   element: null,
@@ -21,17 +20,16 @@ const SpeechMarquee = {
   // Scrolling state
   currentOffset: 0,
   targetOffset: 0,
-  baseSpeed: 10,           // Base pixels per frame
-  scrollSpeed: 10,         // Current speed (adjustable)
-  catchUpSpeed: 20,        // Speed when catching up (2x base)
+  baseSpeed: 10,
+  catchUpSpeed: 25,
   animating: false,
   
-  // Key hold acceleration
+  // Key hold for read head advancement
   leftHeld: false,
   rightHeld: false,
-  holdAccel: 0,            // Acceleration from holding keys
-  accelRate: 0.5,          // How fast acceleration builds
-  maxAccel: 50,            // Maximum acceleration
+  holdTimer: 0,
+  holdDelay: 150,          // ms between word advances when holding
+  lastAdvance: 0,
   
   init: function(elementId) {
     this.element = document.getElementById(elementId);
@@ -56,7 +54,6 @@ const SpeechMarquee = {
     this.recognition.onerror = (event) => this.handleError(event);
     this.recognition.onend = () => this.handleEnd();
     
-    // Keyboard controls
     document.addEventListener('keydown', (e) => this.handleKeydown(e));
     document.addEventListener('keyup', (e) => this.handleKeyup(e));
   },
@@ -66,11 +63,17 @@ const SpeechMarquee = {
     
     switch (e.key) {
       case 'ArrowRight':
-        this.rightHeld = true;
+        if (!this.rightHeld) {
+          this.rightHeld = true;
+          this.advanceReadHead(1);
+        }
         e.preventDefault();
         break;
       case 'ArrowLeft':
-        this.leftHeld = true;
+        if (!this.leftHeld) {
+          this.leftHeld = true;
+          this.advanceReadHead(-1);
+        }
         e.preventDefault();
         break;
       case 'ArrowUp':
@@ -88,12 +91,36 @@ const SpeechMarquee = {
     switch (e.key) {
       case 'ArrowRight':
         this.rightHeld = false;
-        this.holdAccel = 0;
         break;
       case 'ArrowLeft':
         this.leftHeld = false;
-        this.holdAccel = 0;
         break;
+    }
+  },
+  
+  // Move the read head (yellow word) forward or back
+  advanceReadHead: function(direction) {
+    const newIndex = this.currentWordIndex + direction;
+    
+    if (newIndex >= 0 && newIndex < this.words.length) {
+      // Update word states
+      if (direction > 0) {
+        // Moving forward - mark current as recognized
+        this.words[this.currentWordIndex].state = 'recognized';
+        this.recognizedCount = Math.max(this.recognizedCount, this.currentWordIndex + 1);
+      } else {
+        // Moving back - mark new position as in-progress, current as upcoming
+        this.words[this.currentWordIndex].state = 'upcoming';
+      }
+      
+      this.currentWordIndex = newIndex;
+      this.words[this.currentWordIndex].state = 'in-progress';
+      
+      this.updateClasses();
+      this.calculateTargetOffset();
+    } else if (newIndex >= this.words.length) {
+      // End of line - go to next question
+      this.nextQuestion();
     }
   },
   
@@ -116,10 +143,6 @@ const SpeechMarquee = {
       this.words[0].state = 'in-progress';
     }
     
-    // Reset speed and acceleration
-    this.scrollSpeed = this.baseSpeed;
-    this.holdAccel = 0;
-    
     this.buildTrack();
   },
   
@@ -132,7 +155,6 @@ const SpeechMarquee = {
     
     this.wordElements = Array.from(this.track.querySelectorAll('.word'));
     
-    // Reset scroll position - start from right edge
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const containerWidth = this.element.offsetWidth;
@@ -160,51 +182,43 @@ const SpeechMarquee = {
     this.targetOffset = centerX - wordCenter;
   },
   
-  // Animation loop - always scrolling
   animate: function() {
     if (!this.animating) return;
     
-    // Build up acceleration while keys held
-    if (this.rightHeld) {
-      this.holdAccel = Math.min(this.holdAccel + this.accelRate, this.maxAccel);
-    } else if (this.leftHeld) {
-      this.holdAccel = Math.min(this.holdAccel + this.accelRate, this.maxAccel);
+    const now = performance.now();
+    
+    // Handle held keys - advance read head repeatedly
+    if (this.rightHeld && now - this.lastAdvance > this.holdDelay) {
+      this.advanceReadHead(1);
+      this.lastAdvance = now;
+      // Speed up the longer you hold
+      this.holdDelay = Math.max(50, this.holdDelay - 10);
+    } else if (this.leftHeld && now - this.lastAdvance > this.holdDelay) {
+      this.advanceReadHead(-1);
+      this.lastAdvance = now;
+      this.holdDelay = Math.max(50, this.holdDelay - 10);
+    } else if (!this.rightHeld && !this.leftHeld) {
+      // Reset hold delay when not holding
+      this.holdDelay = 150;
     }
     
+    // Scroll towards target (where read head is)
     const distance = this.targetOffset - this.currentOffset;
     const absDistance = Math.abs(distance);
     
-    // Calculate effective speed
     let speed = this.baseSpeed;
-    
-    // Apply key-based acceleration
-    if (this.rightHeld) {
-      // Speed up forward
-      speed = this.baseSpeed + this.holdAccel;
-    } else if (this.leftHeld) {
-      // Reverse with acceleration
-      speed = -(this.baseSpeed + this.holdAccel);
-    } else if (absDistance > 50) {
-      // Catch up when far behind
+    if (absDistance > 100) {
       speed = this.catchUpSpeed;
-    } else if (absDistance > 20) {
+    } else if (absDistance > 30) {
       speed = this.baseSpeed * 1.5;
     }
     
-    // Move based on speed
-    if (this.rightHeld || this.leftHeld) {
-      // Manual control - direct movement
-      this.currentOffset -= speed; // Negative because moving track left = text scrolls right
-      // Update target to current position so it doesn't bounce back
-      this.targetOffset = this.currentOffset;
-    } else if (absDistance > 0.5) {
-      // Auto-scroll towards target
+    if (absDistance > 0.5) {
       const direction = distance > 0 ? 1 : -1;
-      const move = Math.min(Math.abs(speed), absDistance) * direction;
+      const move = Math.min(speed, absDistance) * direction;
       this.currentOffset += move;
+      this.track.style.transform = `translateX(${this.currentOffset}px)`;
     }
-    
-    this.track.style.transform = `translateX(${this.currentOffset}px)`;
     
     requestAnimationFrame(() => this.animate());
   },
@@ -276,13 +290,8 @@ const SpeechMarquee = {
   },
   
   matchWords: function(spokenWords, isFinal) {
-    for (let i = this.recognizedCount; i < this.words.length; i++) {
-      if (this.words[i].state !== 'recognized') {
-        this.words[i].state = 'upcoming';
-      }
-    }
-    
-    let matchIdx = this.recognizedCount;
+    // Only update words at or after current read head
+    let matchIdx = this.currentWordIndex;
     
     for (let s = 0; s < spokenWords.length && matchIdx < this.words.length; s++) {
       const spoken = spokenWords[s].replace(/[^A-Z]/g, '');
@@ -294,24 +303,18 @@ const SpeechMarquee = {
         if (isFinal) {
           this.words[matchIdx].state = 'recognized';
           this.recognizedCount = matchIdx + 1;
+          // Advance read head
+          if (matchIdx === this.currentWordIndex && matchIdx + 1 < this.words.length) {
+            this.currentWordIndex = matchIdx + 1;
+            this.words[this.currentWordIndex].state = 'in-progress';
+          }
         } else {
           this.words[matchIdx].state = 'in-progress';
         }
-        this.currentWordIndex = matchIdx;
         matchIdx++;
       } else if (target.startsWith(spoken) && spoken.length > 1) {
         this.words[matchIdx].state = 'in-progress';
-        this.currentWordIndex = matchIdx;
-      } else if (isFinal) {
-        this.words[matchIdx].state = 'recognized';
-        this.recognizedCount = matchIdx + 1;
-        matchIdx++;
       }
-    }
-    
-    if (this.recognizedCount < this.words.length) {
-      this.currentWordIndex = this.recognizedCount;
-      this.words[this.currentWordIndex].state = 'in-progress';
     }
   },
   
@@ -338,10 +341,9 @@ const SpeechMarquee = {
     this.recognizedCount = 0;
     this.currentWordIndex = 0;
     this.wordElements = [];
-    this.scrollSpeed = this.baseSpeed;
-    this.holdAccel = 0;
     this.leftHeld = false;
     this.rightHeld = false;
+    this.holdDelay = 150;
     this.stopAnimation();
     if (this.track) {
       this.track.innerHTML = '';
