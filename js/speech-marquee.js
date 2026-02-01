@@ -21,7 +21,10 @@ const SpeechMarquee = {
   
   init: function(elementId) {
     this.element = document.getElementById(elementId);
-    if (!this.element) return;
+    if (!this.element) {
+      console.error("SpeechMarquee: Element not found:", elementId);
+      return;
+    }
     
     // Create inner track for scrolling
     this.track = document.createElement('div');
@@ -68,8 +71,6 @@ const SpeechMarquee = {
     }
     
     this.render();
-    // Initial scroll to center first word
-    requestAnimationFrame(() => this.scrollToCurrentWord());
   },
   
   // Load next question
@@ -118,8 +119,7 @@ const SpeechMarquee = {
     const spokenWords = transcript.split(/\s+/);
     
     this.matchWords(spokenWords, isFinal);
-    this.render();
-    this.scrollToCurrentWord();
+    this.updateDisplay();
     
     // Check if phrase is complete
     if (this.recognizedCount >= this.words.length) {
@@ -181,7 +181,7 @@ const SpeechMarquee = {
     }
   },
   
-  // Render the marquee
+  // Render the marquee - creates word elements
   render: function() {
     if (!this.track) return;
     
@@ -190,6 +190,26 @@ const SpeechMarquee = {
     ).join('');
     
     this.wordElements = Array.from(this.track.querySelectorAll('.word'));
+    
+    // Scroll after DOM update
+    requestAnimationFrame(() => this.scrollToCurrentWord());
+  },
+  
+  // Update display without full re-render (just update classes and scroll)
+  updateDisplay: function() {
+    if (!this.track || this.wordElements.length !== this.words.length) {
+      this.render();
+      return;
+    }
+    
+    // Update classes on existing elements
+    this.words.forEach((w, i) => {
+      if (this.wordElements[i]) {
+        this.wordElements[i].className = `word ${w.state}`;
+      }
+    });
+    
+    this.scrollToCurrentWord();
   },
   
   // Scroll to keep current word centered
@@ -197,6 +217,8 @@ const SpeechMarquee = {
     if (!this.element || !this.track || this.wordElements.length === 0) return;
     
     const containerWidth = this.element.offsetWidth;
+    if (containerWidth === 0) return; // Not visible yet
+    
     const centerTarget = containerWidth / 2;
     
     // Find the current word element
