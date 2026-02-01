@@ -6,50 +6,57 @@
   <link rel="stylesheet" href="main.css">
   <style>
     .test-container {
+      position: absolute;
+      top: 50px;
+      left: 50px;
+      right: 50px;
+      bottom: 50px;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      padding: 20px;
-      gap: 20px;
+      gap: 16px;
     }
     .test-header {
       text-align: center;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: #111;
     }
     .test-header h1 {
-      margin: 0 0 8px;
-      font-size: 18px;
+      margin: 0 0 4px;
+      font-size: 16px;
       color: var(--accent);
       letter-spacing: 2px;
     }
     .test-header p {
       margin: 0;
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 11px;
     }
     .test-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      display: flex;
       gap: 16px;
       flex: 1;
+      min-height: 0;
     }
     .test-cell {
+      flex: 1;
       background: #111;
       border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      position: relative;
+    }
+    .test-cell.main {
+      flex: 2;
     }
     .test-cell-header {
       padding: 8px 12px;
       background: #1a1a1a;
       border-bottom: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      flex-shrink: 0;
     }
     .test-cell-header .status {
       color: var(--accent);
@@ -61,11 +68,17 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
+      min-height: 0;
     }
-    .test-cell-body canvas,
-    .test-cell-body video {
+    .test-cell-body canvas {
       max-width: 100%;
       max-height: 100%;
+      object-fit: contain;
+    }
+    .test-cell-body video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .test-cell-body .color-bars {
       position: absolute;
@@ -86,7 +99,7 @@
     }
     .test-cell-body .color-bars span {
       color: #000;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: bold;
     }
     .launcher {
@@ -94,15 +107,15 @@
       gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .launcher a {
-      display: inline-block;
-      padding: 10px 20px;
+      padding: 8px 16px;
       background: #1a1a1a;
       border: 1px solid var(--border);
       color: var(--text);
       text-decoration: none;
-      font-size: 12px;
+      font-size: 11px;
     }
     .launcher a:hover {
       background: #222;
@@ -119,30 +132,30 @@
   </style>
 </head>
 <body>
-  <div class="test-container theme-amber">
+  <div class="test-container">
     <div class="test-header">
       <h1>VOIGHT-KAMPFF TERMINAL — SYSTEM TEST</h1>
-      <p>Verify all displays are active before launching kiosk mode</p>
+      <p>Verify displays before launching kiosk mode</p>
     </div>
     
     <div class="test-grid">
       <div class="test-cell">
         <div class="test-cell-header">
-          <span>VOICE ANALYZER — GPIO LCD 1</span>
-          <span class="status" id="voiceStatus">READY</span>
+          <span>VOICE — 400×400</span>
+          <span class="status">READY</span>
         </div>
         <div class="test-cell-body">
-          <canvas id="voiceCanvas" width="300" height="300"></canvas>
+          <canvas id="voiceCanvas" width="400" height="400"></canvas>
         </div>
       </div>
       
-      <div class="test-cell" id="mainCell">
+      <div class="test-cell main" id="mainCell">
         <div class="test-cell-header">
-          <span>MAIN DISPLAY — HDMI</span>
+          <span>IRIS — 800×800</span>
           <span class="status" id="mainStatus">CLICK TO TEST</span>
         </div>
         <div class="test-cell-body">
-          <video id="testVideo" autoplay muted playsinline style="display:none;width:100%;height:100%;object-fit:cover;"></video>
+          <video id="testVideo" autoplay muted playsinline style="display:none;"></video>
           <div class="color-bars" id="testBars">
             <span>TYRELL CO.</span>
           </div>
@@ -151,19 +164,19 @@
       
       <div class="test-cell">
         <div class="test-cell-header">
-          <span>NEXUS PROBABILITY — GPIO LCD 2</span>
-          <span class="status" id="nexusStatus">READY</span>
+          <span>NEXUS — 400×400</span>
+          <span class="status">READY</span>
         </div>
         <div class="test-cell-body" style="background:#fff;">
-          <canvas id="nexusCanvas" width="300" height="300"></canvas>
+          <canvas id="nexusCanvas" width="400" height="400"></canvas>
         </div>
       </div>
     </div>
     
     <div class="launcher">
-      <a href="operator.html" class="primary">LAUNCH OPERATOR (HDMI)</a>
-      <a href="voice.html">VOICE DISPLAY</a>
-      <a href="nexus.html">NEXUS DISPLAY</a>
+      <a href="operator.html" class="primary">LAUNCH OPERATOR</a>
+      <a href="voice.html">VOICE</a>
+      <a href="nexus.html">NEXUS</a>
       <a href="technician.html">TECHNICIAN</a>
     </div>
   </div>

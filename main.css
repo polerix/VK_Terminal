@@ -1,4 +1,4 @@
-/* VK Terminal — WYSE Terminal Style */
+/* VK Terminal — Clean Terminal Style */
 
 :root {
   --bg: #0a0a0a;
@@ -8,7 +8,6 @@
   --text-muted: #888;
   --accent: #ffcc00;
   --active: #ffdd88;
-  --inactive: #444;
 }
 
 * {
@@ -26,64 +25,78 @@ html, body {
   overflow: hidden;
 }
 
-/* Main frame */
+/* Main container with 50px margin */
 .frame {
-  display: grid;
-  grid-template-columns: 48px 1fr 48px;
-  grid-template-rows: 48px 1fr 48px;
-  height: 100vh;
-  width: 100vw;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  right: 50px;
+  bottom: 50px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Edge bars */
-.edge-top, .edge-bottom {
-  background: var(--bg);
+/* Top bar */
+.top-bar {
+  height: 32px;
+  background: #111;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   padding: 0 12px;
-  gap: 8px;
+  gap: 16px;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
-.edge-bottom {
-  border-bottom: none;
+.top-bar .slot {
+  color: var(--text-muted);
+}
+
+.top-bar .slot.ready {
+  color: var(--accent);
+}
+
+.top-bar .status-main {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* Bottom bar */
+.bottom-bar {
+  height: 32px;
+  background: #111;
   border-top: 1px solid var(--border);
-  grid-column: 1 / -1;
-}
-
-.edge-top {
-  grid-column: 1 / -1;
-}
-
-.edge-left, .edge-right {
-  background: var(--bg);
-  border-right: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 8px 0;
-  gap: 8px;
+  padding: 0 12px;
+  gap: 12px;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
-.edge-right {
-  border-right: none;
-  border-left: 1px solid var(--border);
+.bottom-bar .info {
+  color: var(--text-muted);
 }
 
-/* Control buttons */
+.bottom-bar .info .value {
+  color: var(--accent);
+}
+
+.bottom-bar .spacer {
+  flex: 1;
+}
+
+/* Control buttons in bottom bar */
 .ctrl-btn {
-  width: 36px;
-  height: 36px;
+  padding: 4px 10px;
   background: #1a1a1a;
   border: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-family: inherit;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.1s ease;
 }
 
 .ctrl-btn:hover {
@@ -93,52 +106,26 @@ html, body {
 }
 
 .ctrl-btn.active {
-  background: var(--active);
+  background: var(--accent);
   color: #000;
-  border-color: var(--active);
+  border-color: var(--accent);
 }
 
-.ctrl-btn .icon {
-  font-size: 16px;
-}
-
-/* Status display */
-.status-bar {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.status-bar .slot {
-  white-space: nowrap;
-}
-
-.status-bar .slot.ready {
-  color: var(--accent);
-}
-
-.status-main {
-  margin-left: auto;
-  color: var(--text);
-}
-
-/* Workspace (center) */
+/* Workspace (center area with panels) */
 .workspace {
+  flex: 1;
   background: #050505;
   position: relative;
   overflow: hidden;
 }
 
-/* Draggable/resizable panels */
+/* Panels — fixed aspect ratios, scale to fit */
 .panel {
   position: absolute;
   background: var(--panel-bg);
-  border: none;
-  cursor: move;
-  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .panel canvas,
@@ -154,45 +141,18 @@ html, body {
   object-fit: cover;
 }
 
-/* Resize handle */
-.panel .resize-handle {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 16px;
-  height: 16px;
-  cursor: se-resize;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.panel:hover .resize-handle {
-  opacity: 1;
-  background: linear-gradient(135deg, transparent 50%, var(--border) 50%);
-}
-
-/* Panel placeholder (when inactive) */
 .panel .placeholder {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   color: var(--text-muted);
   letter-spacing: 2px;
 }
 
-/* IRIS specific */
-#irisPanel {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 640px;
-  height: 480px;
-}
-
-#irisPanel .color-bars {
+.panel .color-bars {
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -210,87 +170,25 @@ html, body {
   justify-content: center;
 }
 
-#irisPanel .color-bars span {
+.panel .color-bars span {
   color: #000;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: bold;
-  letter-spacing: 4px;
-  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+  letter-spacing: 3px;
 }
 
-/* Voice panel */
-#voicePanel {
-  left: 20px;
-  top: 20px;
-  width: 320px;
-  height: 320px;
-}
-
-/* Nexus panel */
-#nexusPanel {
-  right: 20px;
-  top: 20px;
-  width: 320px;
-  height: 320px;
-}
-
-/* Bottom info bar */
-.info-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 11px;
-}
-
-.info-bar .label {
-  color: var(--text-muted);
-}
-
-.info-bar .value {
-  color: var(--accent);
-}
-
-/* Key hints */
-.key-hints {
-  display: flex;
-  gap: 12px;
-  margin-left: auto;
-}
-
-.key-hint {
-  padding: 4px 8px;
-  background: #1a1a1a;
-  border: 1px solid var(--border);
-  font-size: 10px;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.key-hint:hover {
-  border-color: #666;
-  color: var(--text);
-}
-
-.key-hint.active {
-  background: var(--active);
-  color: #000;
-  border-color: var(--active);
-}
-
-/* Fullscreen panels (voice.html, nexus.html) */
+/* Fullscreen panel (for dedicated displays) */
 .fullscreen-panel {
   position: fixed;
   inset: 0;
   background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fullscreen-panel canvas {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
-
-/* Theme overrides (minimal) */
-.theme-amber { --accent: #ffcc00; --active: #ffdd88; }
-.theme-green { --accent: #00ff66; --active: #88ffaa; }
-.theme-blue { --accent: #6699ff; --active: #99bbff; }
-.theme-white { --accent: #ffffff; --active: #ffffff; --text: #ffffff; }

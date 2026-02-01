@@ -10,7 +10,7 @@
       padding: 20px;
       background: #0a0a0a;
       color: #ccc;
-      font-family: "Arial Narrow", Arial, sans-serif;
+      font-family: "Consolas", "Monaco", monospace;
       min-height: 100vh;
     }
     .tech-header {
@@ -23,20 +23,20 @@
     }
     .tech-header h1 {
       margin: 0;
-      font-size: 20px;
+      font-size: 16px;
       color: #ff6600;
     }
     .tech-header a {
       color: #888;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
     }
     .tech-header a:hover {
       color: #fff;
     }
     .tech-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
     }
     .tech-section {
@@ -46,7 +46,7 @@
     }
     .tech-section h2 {
       margin: 0 0 12px;
-      font-size: 14px;
+      font-size: 13px;
       color: #ff6600;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -54,14 +54,14 @@
     .tech-section label {
       display: block;
       margin: 8px 0;
-      font-size: 13px;
+      font-size: 12px;
     }
     .tech-section input[type="radio"] {
       margin-right: 8px;
     }
     .tech-section input[type="file"] {
       margin: 8px 0;
-      font-size: 12px;
+      font-size: 11px;
     }
     .tech-section button {
       background: #222;
@@ -69,7 +69,7 @@
       color: #fff;
       padding: 8px 16px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       margin-top: 8px;
     }
     .tech-section button:hover {
@@ -78,7 +78,7 @@
     }
     .tech-section p {
       margin: 8px 0;
-      font-size: 12px;
+      font-size: 11px;
       color: #888;
     }
     .tech-section .value {
@@ -89,7 +89,7 @@
       border: 1px solid #333;
       padding: 8px;
       font-family: monospace;
-      font-size: 11px;
+      font-size: 10px;
       max-height: 200px;
       overflow-y: auto;
       white-space: pre-wrap;
@@ -99,74 +99,117 @@
       border: 1px solid #663300;
       padding: 12px;
       margin-bottom: 20px;
-      font-size: 12px;
+      font-size: 11px;
       color: #ff9966;
+    }
+    .nav-links {
+      margin-top: 12px;
+    }
+    .nav-links a {
+      display: inline-block;
+      margin-right: 16px;
+      color: #888;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .nav-links a:hover {
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div id="themeRoot">
-    <div class="tech-header">
-      <h1>⚠ TYRELL TECHNICIAN CONSOLE — AUTHORIZED PERSONNEL ONLY</h1>
-      <a href="operator.html" id="backToOperator">← RETURN TO OPERATOR</a>
+  <div class="tech-header">
+    <h1>⚠ TYRELL TECHNICIAN CONSOLE</h1>
+    <a href="operator.html">← RETURN TO OPERATOR</a>
+  </div>
+  
+  <div class="warning">
+    Authorized personnel only. Modifications may void warranty.
+  </div>
+  
+  <div class="tech-grid">
+    <div class="tech-section">
+      <h2>Audio</h2>
+      <label><input type="radio" name="soundRadio" value="off" checked> Sound Disabled</label>
+      <label><input type="radio" name="soundRadio" value="on"> Sound Enabled</label>
+      <p>Audio feedback for status changes.</p>
     </div>
     
-    <div class="warning">
-      This console is for licensed Tyrell engineers only. Unauthorized modifications may void warranty and compromise device integrity.
+    <div class="tech-section">
+      <h2>Firmware</h2>
+      <p>Current ROM: <span class="value" id="sysCurrentROM">None</span></p>
+      <input type="file" id="firmwareFilePicker" accept=".json">
+      <div id="firmwareStatus"></div>
+      <p>Upload W3S SB ROM module (.json).</p>
     </div>
     
-    <div class="tech-grid">
-      <div class="tech-section">
-        <h2>Theme Configuration</h2>
-        <label><input type="radio" name="themeRadio" value="theme-esper" checked> Esper Amber</label>
-        <label><input type="radio" name="themeRadio" value="theme-crt"> CRT Green</label>
-        <label><input type="radio" name="themeRadio" value="theme-terminal"> Terminal GUI</label>
-        <label><input type="radio" name="themeRadio" value="theme-neon"> Neon 80s</label>
-        <label><input type="radio" name="themeRadio" value="theme-noir"> Noir Mono</label>
-        <label><input type="radio" name="themeRadio" value="theme-c64"> C64 PET</label>
-        <button id="applyThemeBtn">APPLY THEME</button>
+    <div class="tech-section">
+      <h2>Device</h2>
+      <p>Voight-Kampff Empathy Analyzer</p>
+      <p>Tyrell CO. Genetic Replicants Division</p>
+      <p>Profile: <span class="value" id="profileCodeText">NONE</span></p>
+      <p>ROM: <span class="value" id="romStatusText">NONE</span></p>
+    </div>
+    
+    <div class="tech-section">
+      <h2>Navigation</h2>
+      <div class="nav-links">
+        <a href="index.html">System Test</a>
+        <a href="operator.html">Operator</a>
+        <a href="voice.html">Voice Display</a>
+        <a href="nexus.html">Nexus Display</a>
       </div>
-      
-      <div class="tech-section">
-        <h2>Audio Configuration</h2>
-        <label><input type="radio" name="soundRadio" value="off" checked> Sound Disabled</label>
-        <label><input type="radio" name="soundRadio" value="on"> Sound Enabled</label>
-        <p>Audio feedback for key presses and status changes.</p>
-      </div>
-      
-      <div class="tech-section">
-        <h2>Firmware Update</h2>
-        <p>Current ROM: <span class="value" id="sysCurrentROM">None</span></p>
-        <input type="file" id="firmwareFilePicker" accept=".json">
-        <div id="firmwareStatus"></div>
-        <p>Upload a valid W3S SB ROM module (.json format).</p>
-      </div>
-      
-      <div class="tech-section">
-        <h2>Device Information</h2>
-        <p>Device: Voight-Kampff Empathy Analyzer Console</p>
-        <p>Manufacturer: Tyrell CO. Genetic Replicants Division</p>
-        <p>Profile Code: <span class="value" id="profileCodeText">NONE</span></p>
-        <p>ROM Status: <span class="value" id="romStatusText">NONE</span></p>
-      </div>
-      
-      <div class="tech-section" style="grid-column: 1 / -1;">
-        <h2>System Log</h2>
-        <pre id="logContent"></pre>
-      </div>
+    </div>
+    
+    <div class="tech-section" style="grid-column: 1 / -1;">
+      <h2>System Log</h2>
+      <pre id="logContent"></pre>
     </div>
   </div>
   
   <script src="js/shared.js"></script>
-  <script src="js/technician.js"></script>
   <script>
-    // Initialize technician console
-    Technician.init();
+    const sysCurrentROM = document.getElementById("sysCurrentROM");
+    const profileCodeText = document.getElementById("profileCodeText");
+    const romStatusText = document.getElementById("romStatusText");
+    const logContent = document.getElementById("logContent");
+    const firmwareFilePicker = document.getElementById("firmwareFilePicker");
+    const firmwareStatus = document.getElementById("firmwareStatus");
     
-    // Load current firmware info
-    VK.loadDefaultFirmware().then(() => {
-      Technician.updateUI();
+    document.querySelectorAll('input[name="soundRadio"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        VK.soundEnabled = (radio.value === "on");
+        VK.logEvent("SOUND " + (VK.soundEnabled ? "ENABLED" : "DISABLED"));
+        updateUI();
+      });
     });
+    
+    firmwareFilePicker.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      firmwareStatus.textContent = "Loading...";
+      VK.loadFirmwareFromFile(file)
+        .then(fw => {
+          firmwareStatus.textContent = "Loaded: " + fw.profile;
+          updateUI();
+        })
+        .catch(err => {
+          firmwareStatus.textContent = "Invalid file.";
+        });
+    });
+    
+    function updateUI() {
+      const profile = VK.currentFirmware ? VK.currentFirmware.profile : "None";
+      sysCurrentROM.textContent = profile;
+      profileCodeText.textContent = profile;
+      romStatusText.textContent = VK.currentFirmware ? profile + " ACTIVE" : "NONE";
+      logContent.textContent = VK.logBuffer.join("\n");
+      logContent.scrollTop = logContent.scrollHeight;
+    }
+    
+    VK.addListener(updateUI);
+    VK.loadDefaultFirmware().then(updateUI);
+    setInterval(updateUI, 1000);
   </script>
 </body>
 </html>

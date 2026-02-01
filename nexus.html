@@ -15,10 +15,12 @@
   <script>
     NexusPanel.init("nexusCanvas");
     
+    // Scale canvas to fill viewport while maintaining 1:1 aspect
     function resize() {
       const canvas = document.getElementById("nexusCanvas");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const size = Math.min(window.innerWidth, window.innerHeight);
+      canvas.style.width = size + "px";
+      canvas.style.height = size + "px";
     }
     resize();
     window.addEventListener("resize", resize);

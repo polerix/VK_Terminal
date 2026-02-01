@@ -6,83 +6,50 @@
   <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <div class="frame theme-amber">
+  <div class="frame">
     
-    <!-- Top edge -->
-    <div class="edge-top">
-      <div class="status-bar">
-        <span class="slot" id="slotFan">FAN: —</span>
-        <span class="slot" id="slotIris">IRIS: OFF</span>
-        <span class="slot" id="slotAudio">AUDIO: —</span>
-        <span class="slot" id="slotVideo">VIDEO: —</span>
-        <span class="slot" id="slotProfile">PROFILE: NONE</span>
-        <span class="status-main" id="slotStatus">SYSTEM IDLE</span>
-      </div>
+    <!-- Top bar -->
+    <div class="top-bar">
+      <span class="slot" id="slotFan">FAN: —</span>
+      <span class="slot" id="slotIris">IRIS: OFF</span>
+      <span class="slot" id="slotAudio">AUDIO: —</span>
+      <span class="slot" id="slotVideo">VIDEO: —</span>
+      <span class="slot" id="slotProfile">PROFILE: NONE</span>
+      <span class="status-main" id="slotStatus">SYSTEM IDLE</span>
     </div>
     
-    <!-- Left edge -->
-    <div class="edge-left">
-      <button class="ctrl-btn" id="btnToken" title="Token [K]">
-        <span class="icon">🔑</span>
-      </button>
-      <button class="ctrl-btn" id="btnIris" title="Iris [I]">
-        <span class="icon">👁</span>
-      </button>
-      <button class="ctrl-btn" id="btnFan" title="Fan [F]">
-        <span class="icon">⟳</span>
-      </button>
-      <button class="ctrl-btn" id="btnDisplay" title="Display [D]">
-        <span class="icon">▣</span>
-      </button>
-    </div>
-    
-    <!-- Workspace -->
+    <!-- Workspace with panels -->
     <div class="workspace" id="workspace">
       
-      <!-- IRIS Panel (main video) -->
-      <div class="panel" id="irisPanel">
-        <video id="irisVideo" autoplay muted playsinline></video>
-        <div class="color-bars" id="irisBars">
-          <span>TYRELL CO.</span>
-        </div>
-        <div class="placeholder" id="irisPlaceholder">TYRELL CO.</div>
-        <div class="resize-handle" data-resize="irisPanel"></div>
-      </div>
-      
-      <!-- Voice Panel -->
-      <div class="panel" id="voicePanel">
+      <!-- Voice Panel: 400x400 base -->
+      <div class="panel" id="voicePanel" data-base-w="400" data-base-h="400">
         <canvas id="voiceCanvas" width="400" height="400"></canvas>
-        <div class="resize-handle" data-resize="voicePanel"></div>
       </div>
       
-      <!-- Nexus Panel -->
-      <div class="panel" id="nexusPanel">
+      <!-- IRIS Panel: 800x800 base -->
+      <div class="panel" id="irisPanel" data-base-w="800" data-base-h="800">
+        <video id="irisVideo" autoplay muted playsinline></video>
+        <div class="color-bars" id="irisBars"><span>TYRELL CO.</span></div>
+        <div class="placeholder" id="irisPlaceholder">TYRELL CO.</div>
+      </div>
+      
+      <!-- Nexus Panel: 400x400 base -->
+      <div class="panel" id="nexusPanel" data-base-w="400" data-base-h="400">
         <canvas id="nexusCanvas" width="400" height="400"></canvas>
-        <div class="resize-handle" data-resize="nexusPanel"></div>
       </div>
       
     </div>
     
-    <!-- Right edge -->
-    <div class="edge-right">
-      <button class="ctrl-btn" id="btnInitiate" title="Initiate [SPACE]">
-        <span class="icon">▶</span>
-      </button>
-    </div>
-    
-    <!-- Bottom edge -->
-    <div class="edge-bottom">
-      <div class="info-bar">
-        <span><span class="label">ROM:</span> <span class="value" id="romStatus">NONE</span></span>
-        <span><span class="label">MODE:</span> <span class="value" id="modeStatus">STANDBY</span></span>
-      </div>
-      <div class="key-hints">
-        <span class="key-hint" id="hintK">[K] TOKEN</span>
-        <span class="key-hint" id="hintI">[I] IRIS</span>
-        <span class="key-hint" id="hintF">[F] FAN</span>
-        <span class="key-hint" id="hintD">[D] DISPLAY</span>
-        <span class="key-hint" id="hintSpace">[SPACE] INITIATE</span>
-      </div>
+    <!-- Bottom bar -->
+    <div class="bottom-bar">
+      <span class="info"><span class="label">ROM:</span> <span class="value" id="romStatus">NONE</span></span>
+      <span class="info"><span class="label">MODE:</span> <span class="value" id="modeStatus">STANDBY</span></span>
+      <span class="spacer"></span>
+      <button class="ctrl-btn" id="btnK">[K] TOKEN</button>
+      <button class="ctrl-btn" id="btnI">[I] IRIS</button>
+      <button class="ctrl-btn" id="btnF">[F] FAN</button>
+      <button class="ctrl-btn" id="btnD">[D] DISPLAY</button>
+      <button class="ctrl-btn" id="btnSpace">[SPACE] INITIATE</button>
     </div>
     
   </div>
@@ -93,12 +60,12 @@
   <script>
     // DOM refs
     const workspace = document.getElementById("workspace");
+    const voicePanel = document.getElementById("voicePanel");
     const irisPanel = document.getElementById("irisPanel");
+    const nexusPanel = document.getElementById("nexusPanel");
     const irisVideo = document.getElementById("irisVideo");
     const irisBars = document.getElementById("irisBars");
     const irisPlaceholder = document.getElementById("irisPlaceholder");
-    const voicePanel = document.getElementById("voicePanel");
-    const nexusPanel = document.getElementById("nexusPanel");
     
     const slotStatus = document.getElementById("slotStatus");
     const slotFan = document.getElementById("slotFan");
@@ -109,82 +76,69 @@
     const romStatus = document.getElementById("romStatus");
     const modeStatus = document.getElementById("modeStatus");
     
-    const btnToken = document.getElementById("btnToken");
-    const btnIris = document.getElementById("btnIris");
-    const btnFan = document.getElementById("btnFan");
-    const btnDisplay = document.getElementById("btnDisplay");
-    const btnInitiate = document.getElementById("btnInitiate");
+    const btnK = document.getElementById("btnK");
+    const btnI = document.getElementById("btnI");
+    const btnF = document.getElementById("btnF");
+    const btnD = document.getElementById("btnD");
+    const btnSpace = document.getElementById("btnSpace");
     
     // Init panels
     VoicePanel.init("voiceCanvas");
     NexusPanel.init("nexusCanvas");
     
-    // Drag state
-    let dragTarget = null;
-    let dragOffset = { x: 0, y: 0 };
+    // Layout panels proportionally
+    // Base sizes: Voice 400x400, IRIS 800x800, Nexus 400x400
+    // Total base width: 400 + 800 + 400 = 1600
+    // Total base height: max = 800
+    // Gap between panels: 20px (2 gaps = 40px)
     
-    // Resize state
-    let resizeTarget = null;
-    let resizeStart = { x: 0, y: 0, w: 0, h: 0 };
+    function layoutPanels() {
+      const ws = workspace.getBoundingClientRect();
+      const gap = 20;
+      const baseTotal = 1600 + gap * 2; // 400 + 800 + 400 + gaps
+      const baseHeight = 800;
+      
+      // Scale to fit workspace
+      const scaleW = ws.width / baseTotal;
+      const scaleH = ws.height / baseHeight;
+      const scale = Math.min(scaleW, scaleH);
+      
+      const voiceW = 400 * scale;
+      const voiceH = 400 * scale;
+      const irisW = 800 * scale;
+      const irisH = 800 * scale;
+      const nexusW = 400 * scale;
+      const nexusH = 400 * scale;
+      const scaledGap = gap * scale;
+      
+      // Total scaled width
+      const totalW = voiceW + irisW + nexusW + scaledGap * 2;
+      const startX = (ws.width - totalW) / 2;
+      
+      // Center vertically
+      const voiceY = (ws.height - voiceH) / 2;
+      const irisY = (ws.height - irisH) / 2;
+      const nexusY = (ws.height - nexusH) / 2;
+      
+      // Position panels
+      voicePanel.style.left = startX + "px";
+      voicePanel.style.top = voiceY + "px";
+      voicePanel.style.width = voiceW + "px";
+      voicePanel.style.height = voiceH + "px";
+      
+      irisPanel.style.left = (startX + voiceW + scaledGap) + "px";
+      irisPanel.style.top = irisY + "px";
+      irisPanel.style.width = irisW + "px";
+      irisPanel.style.height = irisH + "px";
+      
+      nexusPanel.style.left = (startX + voiceW + scaledGap + irisW + scaledGap) + "px";
+      nexusPanel.style.top = nexusY + "px";
+      nexusPanel.style.width = nexusW + "px";
+      nexusPanel.style.height = nexusH + "px";
+    }
     
-    // Make panels draggable
-    document.querySelectorAll(".panel").forEach(panel => {
-      panel.addEventListener("mousedown", (e) => {
-        if (e.target.classList.contains("resize-handle")) return;
-        dragTarget = panel;
-        const rect = panel.getBoundingClientRect();
-        dragOffset.x = e.clientX - rect.left;
-        dragOffset.y = e.clientY - rect.top;
-        panel.style.zIndex = Date.now() % 10000;
-        e.preventDefault();
-      });
-    });
-    
-    // Make panels resizable (proportional)
-    document.querySelectorAll(".resize-handle").forEach(handle => {
-      handle.addEventListener("mousedown", (e) => {
-        const panelId = handle.getAttribute("data-resize");
-        resizeTarget = document.getElementById(panelId);
-        const rect = resizeTarget.getBoundingClientRect();
-        resizeStart = {
-          x: e.clientX,
-          y: e.clientY,
-          w: rect.width,
-          h: rect.height,
-          ratio: rect.width / rect.height
-        };
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
-    
-    document.addEventListener("mousemove", (e) => {
-      if (dragTarget) {
-        const wsRect = workspace.getBoundingClientRect();
-        let x = e.clientX - wsRect.left - dragOffset.x;
-        let y = e.clientY - wsRect.top - dragOffset.y;
-        // Remove transform for IRIS panel when dragging
-        dragTarget.style.transform = "none";
-        dragTarget.style.left = x + "px";
-        dragTarget.style.top = y + "px";
-      }
-      if (resizeTarget) {
-        const dx = e.clientX - resizeStart.x;
-        const dy = e.clientY - resizeStart.y;
-        // Proportional resize based on diagonal movement
-        const delta = (dx + dy) / 2;
-        const newW = Math.max(160, resizeStart.w + delta);
-        const newH = newW / resizeStart.ratio;
-        resizeTarget.style.width = newW + "px";
-        resizeTarget.style.height = newH + "px";
-        resizeTarget.style.transform = "none";
-      }
-    });
-    
-    document.addEventListener("mouseup", () => {
-      dragTarget = null;
-      resizeTarget = null;
-    });
+    layoutPanels();
+    window.addEventListener("resize", layoutPanels);
     
     // Key handling
     let spaceDown = false;
@@ -200,6 +154,7 @@
       else if (key === " " && !spaceDown) {
         spaceDown = true;
         handleInitiate();
+        e.preventDefault();
       }
     });
     
@@ -208,11 +163,11 @@
     });
     
     // Button handlers
-    btnToken.addEventListener("click", handleToken);
-    btnIris.addEventListener("click", handleIris);
-    btnFan.addEventListener("click", handleFan);
-    btnDisplay.addEventListener("click", handleDisplay);
-    btnInitiate.addEventListener("click", handleInitiate);
+    btnK.addEventListener("click", handleToken);
+    btnI.addEventListener("click", handleIris);
+    btnF.addEventListener("click", handleFan);
+    btnD.addEventListener("click", handleDisplay);
+    btnSpace.addEventListener("click", handleInitiate);
     
     function handleToken() {
       VK.requestToken().then(success => {
@@ -270,18 +225,12 @@
     
     function updateUI() {
       // Buttons
-      btnToken.classList.toggle("active", VK.hasToken);
-      btnIris.classList.toggle("active", VK.irisTargetActive || VK.irisState !== "OFF");
-      btnFan.classList.toggle("active", VK.fanOn);
-      btnDisplay.classList.toggle("active", VK.displayOn);
-      btnInitiate.classList.toggle("active", VK.analysisRunning);
-      
-      // Key hints
-      document.getElementById("hintK").classList.toggle("active", VK.hasToken);
-      document.getElementById("hintI").classList.toggle("active", VK.irisTargetActive);
-      document.getElementById("hintF").classList.toggle("active", VK.fanOn);
-      document.getElementById("hintD").classList.toggle("active", VK.displayOn);
-      document.getElementById("hintSpace").classList.toggle("active", VK.analysisRunning);
+      btnK.classList.toggle("active", VK.hasToken);
+      btnI.classList.toggle("active", VK.irisTargetActive || VK.irisState !== "OFF");
+      btnF.classList.toggle("active", VK.fanOn);
+      btnD.classList.toggle("active", VK.displayOn);
+      btnSpace.classList.toggle("active", VK.analysisRunning);
+      btnSpace.textContent = VK.analysisRunning ? "[SPACE] TERMINATE" : "[SPACE] INITIATE";
       
       // Status slots
       slotFan.textContent = "FAN: " + (VK.fanOn ? "ON" : "—");
