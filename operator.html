@@ -85,6 +85,7 @@
   <script src="js/shared.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/nexus.js"></script>
+  <script src="js/vu-meters.js"></script>
   <script>
     // DOM refs
     const workspace = document.getElementById("workspace");
@@ -115,6 +116,7 @@
     // Init panels
     VoicePanel.init("voiceCanvas");
     NexusPanel.init("nexusCanvas");
+    VUMeters.init("vuMeterLeft", "vuMeterRight");
     
     // Layout panels proportionally
     // Base sizes: Voice 400x400, IRIS 800x800, Nexus 400x400
@@ -126,7 +128,7 @@
       const ws = workspace.getBoundingClientRect();
       const gap = 20;
       const vuGap = 10; // gap between panel and VU meter
-      const vuHeight = 40;
+      const vuHeight = 13; // reduced to 1/3 of original 40px
       const baseTotal = 1600 + gap * 2; // 400 + 800 + 400 + gaps
       const baseHeight = 800;
       
@@ -321,6 +323,7 @@
       
       VK.updateIris(dt);
       VK.updateAudio();
+      VUMeters.update();
       
       if (VK.displayOn) {
         VoicePanel.draw();
